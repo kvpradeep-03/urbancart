@@ -18,11 +18,13 @@ import CustomizedMenus from "./Account";
 import { GiShoppingBag } from "react-icons/gi";
 import { SvgIcon } from "@mui/material";
 import { BsShopWindow } from "react-icons/bs";
+import Search from "./Search";
+import theme from "../../theme";
 
 const drawerWidth = 240;
 const navItems = [
   <CustomizedMenus />,
-  <Box sx={{ display: "flex", alignItems: "center", gap: 1 ,cursor: "pointer" , mr:1}}>
+  <Box sx={{ display: "flex", alignItems: "center", gap: 1 ,cursor: "pointer"}}>
     <SvgIcon
       component={GiShoppingBag}
       inheritViewBox
@@ -67,7 +69,13 @@ const Navbar = () => {
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <AppBar sx={{ bgcolor: "#fffefe", color: "#141514" }} component="nav">
+      <AppBar
+        sx={{
+          bgcolor: "theme.palette.primary.main",
+          color: "theme.palette.primary.contrastText",
+        }}
+        component="nav"
+      >
         <Toolbar sx={{ position: "relative" }}>
           {/* Left Icon */}
           <IconButton
@@ -95,8 +103,19 @@ const Navbar = () => {
           >
             UrbanCart
           </Typography>
+          {/* Search - Show only on sm and above */}
+          <Box sx={{ display: { xs: "none", sm: "block" ,} }}>
+            <Search />
+          </Box>
           {/* Right Navigation Buttons */}
-          <Box sx={{ display: { xs: "none", sm: "block" }, ml: "auto" }}>          
+          <Box
+            sx={{
+              display: { xs: "none", sm: "flex" }, // flex instead of block
+              alignItems: "center", // vertical center
+              gap: 1, // space between buttons/icons
+              ml: "auto",
+            }}
+          >
             {navItems.map((item) => (
               <Button key={item} sx={{ bgcolor: "#fffefe", color: "#141514" }}>
                 {item}

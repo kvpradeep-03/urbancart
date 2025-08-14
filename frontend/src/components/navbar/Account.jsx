@@ -53,7 +53,7 @@ export default function CustomizedMenus() {
         }}
       >
         <IoPersonOutline />
-        <Typography sx={{textTransform: "none" }}>Profile</Typography>
+        <Typography sx={{ textTransform: "none" }}>Profile</Typography>
       </Box>
       <Menu
         disablePortal // ✅ keep inside Drawer DOM
@@ -80,8 +80,10 @@ export default function CustomizedMenus() {
             paddingY: 1,
           }}
         >
-          <Typography fontWeight={600}>Welcome</Typography>
-          <Typography color="initial">
+          <Typography fontWeight={600} sx={{ textTransform: "none" }}>
+            Welcome
+          </Typography>
+          <Typography color="initial" sx={{ textTransform: "none" }}>
             To access account and manage orders
           </Typography>
         </MenuItem>
