@@ -6,7 +6,6 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 export default function Banner() {
-
   const settings = {
     /**
      * react-slick is a popular React wrapper around the Slick Carousel library.
@@ -45,60 +44,63 @@ export default function Banner() {
   ];
 
   return (
-    <Box sx={{ width: "100%", position: "relative" }}>
-      <Slider {...settings}>
-        {/* We pass settings to <Slider> and map over the banners array */}
-        {banners.map((banner) => (
-          <Box
-            key={banner.id}
-            sx={{
-              position: "relative",
-              height: { xs: "200px", sm: "400px", md: "500px" },
-              backgroundImage: `url(${banner.img})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              mt: {xs:7, sm: 8},
-            }}
-          >
-            {/* Overlay */}
+    <>
+    
+      <Box sx={{ width: "100%", position: "relative" }}>
+        <Slider {...settings}>
+          {/* We pass settings to <Slider> and map over the banners array */}
+          {banners.map((banner) => (
             <Box
+              key={banner.id}
               sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                bgcolor: "rgba(0,0,0,0.4)",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                color: "#fff",
-                textAlign: "center",
-                px: { xs: 2, sm: 4 }, // responsive padding
+                position: "relative",
+                height: { xs: "400px", sm: "400px", md: "500px" },
+                backgroundImage: `url(${banner.img})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                mt: { xs: 7, sm: 8 },
               }}
             >
-              <Typography
+              {/* Overlay */}
+              <Box
                 sx={{
-                  fontWeight: "bold",
-                  fontSize: { xs: "1.5rem", sm: "2.5rem", md: "3rem" }, // smaller on mobile
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  bgcolor: "rgba(0,0,0,0.4)",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  color: "#fff",
+                  textAlign: "center",
+                  px: { xs: 2, sm: 4 }, // responsive padding
                 }}
               >
-                {banner.title}
-              </Typography>
+                <Typography
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: { xs: "1.5rem", sm: "2.5rem", md: "3rem" }, // smaller on mobile
+                  }}
+                >
+                  {banner.title}
+                </Typography>
 
-              <Typography
-                sx={{
-                  mt: 1,
-                  fontSize: { xs: "0.9rem", sm: "1.2rem", md: "1.5rem" },
-                }}
-              >
-                {banner.subtitle}
-              </Typography>
+                <Typography
+                  sx={{
+                    mt: 1,
+                    fontSize: { xs: "0.9rem", sm: "1.2rem", md: "1.5rem" },
+                  }}
+                >
+                  {banner.subtitle}
+                </Typography>
+              </Box>
             </Box>
-          </Box>
-        ))}
-      </Slider>
-    </Box>
+          ))}
+        </Slider>
+      </Box>
+    </>
   );
 }

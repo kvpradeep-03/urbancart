@@ -19,7 +19,7 @@ import { GiShoppingBag } from "react-icons/gi";
 import { SvgIcon } from "@mui/material";
 import { BsShopWindow } from "react-icons/bs";
 import Search from "./Search";
-import theme from "../../theme";
+ 
 
 const drawerWidth = 240;
 const navItems = [
@@ -55,8 +55,8 @@ const Navbar = () => {
       </Typography>
       <Divider />
       <List>
-        {navItems.map((item) => (
-          <ListItem key={item} disablePadding>
+        {navItems.map((item, index) => (
+          <ListItem key={index} disablePadding>
             <ListItemButton>
               <ListItemText primary={item} />
             </ListItemButton>
@@ -71,8 +71,8 @@ const Navbar = () => {
       <CssBaseline />
       <AppBar
         sx={{
-          bgcolor: "theme.palette.primary.main",
-          color: "theme.palette.primary.contrastText",
+          bgcolor: "#fffefe",
+          color: "#141514",
         }}
         component="nav"
       >
@@ -104,7 +104,7 @@ const Navbar = () => {
             UrbanCart
           </Typography>
           {/* Search - Show only on sm and above */}
-          <Box sx={{ display: { xs: "none", sm: "block" ,} }}>
+          <Box sx={{ display: { xs: "none", sm: "block" } }}>
             <Search />
           </Box>
           {/* Right Navigation Buttons */}
@@ -116,8 +116,8 @@ const Navbar = () => {
               ml: "auto",
             }}
           >
-            {navItems.map((item) => (
-              <Button key={item} sx={{ bgcolor: "#fffefe", color: "#141514" }}>
+            {navItems.map((item, index) => (
+              <Button key={index} sx={{ bgcolor: "#fffefe", color: "#141514" }}>
                 {item}
               </Button>
             ))}
