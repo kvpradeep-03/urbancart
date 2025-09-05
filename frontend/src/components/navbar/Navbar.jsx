@@ -19,12 +19,14 @@ import { GiShoppingBag } from "react-icons/gi";
 import { SvgIcon } from "@mui/material";
 import { BsShopWindow } from "react-icons/bs";
 import Search from "./Search";
- 
+import { Link } from "react-router-dom";
 
 const drawerWidth = 240;
 const navItems = [
   <CustomizedMenus />,
-  <Box sx={{ display: "flex", alignItems: "center", gap: 1 ,cursor: "pointer"}}>
+  <Box
+    sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}
+  >
     <SvgIcon
       component={GiShoppingBag}
       inheritViewBox
@@ -32,7 +34,9 @@ const navItems = [
     />
     <Typography sx={{ textTransform: "none" }}>Bag</Typography>
   </Box>,
-  <Box sx={{ display: "flex", alignItems: "center",cursor: "pointer" , gap: 1 }}>
+  <Box
+    sx={{ display: "flex", alignItems: "center", cursor: "pointer", gap: 1 }}
+  >
     <SvgIcon
       component={BsShopWindow}
       inheritViewBox
@@ -50,9 +54,11 @@ const Navbar = () => {
 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>
-      <Typography variant="h6" sx={{ my: 2 }}>
-        UrbanCart
-      </Typography>
+      <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+        <Typography variant="h6" sx={{ cursor: "pointer", my: 2 }}>
+          UrbanCart
+        </Typography>
+      </Link>
       <Divider />
       <List>
         {navItems.map((item, index) => (
@@ -76,8 +82,8 @@ const Navbar = () => {
         }}
         component="nav"
       >
-        <Toolbar sx={{ position: "relative" }}>
-          {/* Left Icon */}
+        <Toolbar sx={{ display: "flex", alignItems: "center" }}>
+          {/* Left Icon (mobile only) */}
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -88,39 +94,53 @@ const Navbar = () => {
             <MenuIcon sx={{ fontSize: "1.5rem" }} />
           </IconButton>
 
-          {/* Title */}
-          <Typography
-            variant="h5"
-            component="div"
-            sx={{
-              // Default (desktop): normal flow
-              flexGrow: { xs: 0, sm: 1 },
-              // Mobile: absolute center
-              position: { xs: "absolute", sm: "static" },
-              left: { xs: "50%", sm: "auto" },
-              transform: { xs: "translateX(-50%)", sm: "none" },
-            }}
-          >
-            UrbanCart
-          </Typography>
-          {/* Search - Show only on sm and above */}
-          <Box sx={{ display: { xs: "none", sm: "block" } }}>
-            <Search />
-          </Box>
-          {/* Right Navigation Buttons */}
+          <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
+            <Typography
+              variant="h5"
+              component="div"
+              sx={{
+                cursor: "pointer",
+                position: { xs: "absolute", sm: "static" }, // absolute only on mobile
+                top: { xs: "50%", sm: "auto" }, // vertical center
+                left: { xs: "50%", sm: "auto" }, // horizontal center
+                transform: { xs: "translate(-50%, -50%)", sm: "none" }, // perfect centering
+              }}
+            >
+              UrbanCart
+            </Typography>
+          </Link>
+
+          {/* Right side container: Search + navItems */}
           <Box
             sx={{
-              display: { xs: "none", sm: "flex" }, // flex instead of block
-              alignItems: "center", // vertical center
-              gap: 1, // space between buttons/icons
-              ml: "auto",
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              ml: "auto", // push to right
             }}
           >
-            {navItems.map((item, index) => (
-              <Button key={index} sx={{ bgcolor: "#fffefe", color: "#141514" }}>
-                {item}
-              </Button>
-            ))}
+            {/* Search only visible on desktop */}
+            <Box sx={{ display: { xs: "none", sm: "block" } }}>
+              <Search />
+            </Box>
+
+            {/* Nav items (desktop only) */}
+            <Box
+              sx={{
+                display: { xs: "none", sm: "flex" },
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              {navItems.map((item, index) => (
+                <Button
+                  key={index}
+                  sx={{ bgcolor: "#fffefe", color: "#141514" }}
+                >
+                  {item}
+                </Button>
+              ))}
+            </Box>
           </Box>
         </Toolbar>
       </AppBar>

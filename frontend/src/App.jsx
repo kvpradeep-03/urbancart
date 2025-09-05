@@ -5,6 +5,7 @@ import Products from "./pages/Products";
 import Home from "./pages/Home";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import theme from "./theme";
+import Footer from "./components/Footer";
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
           <Route path="/products" element={<Products />} />
         </Routes>
       </ThemeProvider>
+      <Footer/>
     </div>
   );
 };

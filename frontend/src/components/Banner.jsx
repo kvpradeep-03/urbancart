@@ -45,7 +45,6 @@ export default function Banner() {
 
   return (
     <>
-    
       <Box sx={{ width: "100%", position: "relative" }}>
         <Slider {...settings}>
           {/* We pass settings to <Slider> and map over the banners array */}
@@ -58,10 +57,9 @@ export default function Banner() {
                 backgroundImage: `url(${banner.img})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
-                mt: { xs: 7, sm: 8 },
               }}
             >
-              {/* Overlay */}
+              {/* img Overlay */}
               <Box
                 sx={{
                   position: "absolute",

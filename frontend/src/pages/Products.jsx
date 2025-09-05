@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { categories } from "../assets/assert";
 import {
   Box,
   FormGroup,
@@ -8,7 +9,12 @@ import {
   Typography,
   Stack,
   Divider,
+  Card,
+  CardMedia,
+  Grid,
 } from "@mui/material";
+import CardContent from "@mui/material/CardContent";
+import CardActionArea from "@mui/material/CardActionArea";
 import { Categories } from "../assets/assert";
 import Slider from "@mui/material/Slider";
 
@@ -55,7 +61,7 @@ const Products = () => {
   const [discount, setDiscount] = useState([]);
   const discountRange = ["40", "50", "60", "70", "80"];
   const handleDiscount = (event) => {
-    const value = (event.target.name);
+    const value = event.target.name;
     setDiscount(
       (prev) =>
         prev.includes(value)
@@ -87,9 +93,31 @@ const Products = () => {
   // }, []);
 
   return (
-    <Stack direction="row" spacing={2} justifyContent="space-between" mt={8}>
-      <Box sx={{ border: "1px solid #e0e0e0", width: 250, p: 2 }}>
-        <Typography variant="h6" sx={{ mb: 1 }}>
+    <Stack
+      direction={{ xs: "column", sm: "row" }}
+      spacing={0}
+      justifyContent="space-between"
+      mt={"auto"}
+    >
+      <Box
+        sx={{
+          display: { xs: "none", sm: "block" }, // hide on xs screens
+          border: "1px solid #e0e0e0",
+          width: 250,
+          p: 2,
+          flexShrink: 0, // prevent shrinking
+          height: "calc(100vh - 64px)", // full viewport height minus header (adjust 64px to your header height)
+          position: "sticky",
+          top: 64, // match your header height so it sticks below navbar
+          overflowY: "auto",
+
+          // Hide scrollbar
+          "&::-webkit-scrollbar": { display: "none" }, // Chrome, Safari
+          msOverflowStyle: "none", // IE/Edge
+          scrollbarWidth: "none", // Firefox
+        }}
+      >
+        <Typography variant="h6" sx={{ mb: 1, fontWeight: 400 }}>
           Filter by Category
         </Typography>
         <FormGroup>
@@ -107,6 +135,13 @@ const Products = () => {
                   />
                 }
                 label={label}
+                slotProps={{
+                  typography: {
+                    fontWeight: 400,
+                    fontSize: "14px",
+                    fontFamily: "Poppins, sans-serif",
+                  },
+                }}
               />
             );
           })}
@@ -134,7 +169,7 @@ const Products = () => {
           </Typography>
         )}
         <Divider sx={{ my: 2 }} />
-        <Typography variant="h6" sx={{ mb: 1 }}>
+        <Typography variant="h6" sx={{ mb: 1, fontWeight: 400 }}>
           Price
         </Typography>
         <Box>
@@ -166,12 +201,12 @@ const Products = () => {
             </Typography>
           </Box>
           <Divider sx={{ my: 2 }} />
-          <Typography variant="h6" sx={{ mb: 1 }}>
+          <Typography variant="h6" sx={{ mb: 1, fontWeight: 400 }}>
             Discount Range
           </Typography>
           <FormGroup>
             {discountRange.map((rangeVal) => {
-              const label = `${rangeVal} and above`;
+              const label = `${rangeVal}% and above`;
               return (
                 <FormControlLabel
                   key={label.replace(/\s+/g, "_")} //replace spaces with underscores for key
@@ -184,6 +219,12 @@ const Products = () => {
                     />
                   }
                   label={label}
+                  slotProps={{
+                    typography: {
+                      fontWeight: 300,
+                      fontFamily: "Poppins, sans-serif",
+                    },
+                  }}
                 />
               );
             })}
@@ -192,7 +233,54 @@ const Products = () => {
       </Box>
 
       <Box>
-        <h1>products</h1>
+        <Box sx={{ flexGrow: 1, p: { xs: 0, sm: 2 } }}>
+          <Grid
+            container
+            spacing={{ xs: 0, sm: 2, lg: 2 }}
+            justifyContent="center"
+          >
+            {categories.map((category) => (
+              <Grid
+                size={{ xs: 6, sm: 6, lg: 3 }}
+                key={category.id}
+                sx={{ px: { xs: 0, sm: 1 } }} 
+              >
+                <Card sx={{ Width: "100%" }}>
+                  <CardActionArea>
+                    <CardMedia
+                      component="img"
+                      height="280"
+                      image="../../public/sampleimg.webp"
+                      alt="green iguana"
+                      objectFit="fill"
+                      sx={{ objectFit: "cover", width: "100%" }}
+                    />
+                    <CardContent>
+                      <Typography gutterBottom variant="h5" component="div">
+                        Product Title
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "text.secondary" }}
+                      >
+                        Product short one line description goes here.while
+                        clicking It provides a brief overview of the product
+                      </Typography>
+                      <Typography
+                        gutterBottom
+                        variant="body3"
+                        component="div"
+                        sx={{ mt: 1 }}
+                      >
+                        Rs.899 60%off
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
       </Box>
     </Stack>
   );

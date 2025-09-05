@@ -1,18 +1,12 @@
-import React from "react"; 
-import {
-  Box,
-  Divider,
-  Typography,
-  Card,
-  CardMedia,
-} from "@mui/material";
+import React from "react";
+import { Box, Divider, Typography, Card, CardMedia } from "@mui/material";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { banner_slot_1 } from "../assets/assert";
 import { banner_slot_2 } from "../assets/assert";
 import { banner_slot_3 } from "../assets/assert";
-
+import { Link } from "react-router-dom";
 
 const settings = {
   dots: true,
@@ -44,9 +38,7 @@ const settings = {
   ],
 };
 
-
-
-console.log(' window.innerWidth Value = '+window.innerWidth);
+console.log(" window.innerWidth Value = " + window.innerWidth);
 
 const Deals = () => {
   return (
@@ -77,24 +69,29 @@ const Deals = () => {
               mb: 0,
             }}
           >
-            <Card
-              sx={{
-                width: "100%",
-                borderRadius: "12px",
-                boxShadow: 3,
-                overflow: "hidden",
-              }}
+            <Link
+              to={`/products/`}
+              style={{ textDecoration: "none", color: "inherit" }}
             >
-              <CardMedia
-                component="img"
-                image={banner.img}
-                alt={banner.title}
+              <Card
                 sx={{
-                  height: { xs: 300, sm: 350, md: 350 }, // smaller on mobile
-                  objectFit: "cover",
+                  width: "100%",
+                  borderRadius: "12px",
+                  boxShadow: 3,
+                  overflow: "hidden",
                 }}
-              />
-            </Card>
+              >
+                <CardMedia
+                  component="img"
+                  image={banner.img}
+                  alt={banner.title}
+                  sx={{
+                    height: { xs: 300, sm: 350, md: 350 }, // smaller on mobile
+                    objectFit: "cover",
+                  }}
+                />
+              </Card>
+            </Link>
           </Box>
         ))}
       </Slider>
@@ -124,26 +121,31 @@ const Deals = () => {
               mt: { sm: "2vw", xs: "12vw" },
             }}
           >
-            <Card
-              sx={{
-                borderRadius: "12px",
-                boxShadow: 3,
-                overflow: "hidden",
-                height: "100%", // makes all cards equal height
-                display: "flex",
-                flexDirection: "column",
-              }}
+            <Link
+              to={`/products/`}
+              style={{ textDecoration: "none", color: "inherit" }}
             >
-              <CardMedia
-                component="img"
-                image={banner.img}
-                alt={banner.title}
+              <Card
                 sx={{
-                  height: { xs: 300, sm: 350, md: 350 }, // smaller on mobile
-                  objectFit: "cover",
+                  borderRadius: "12px",
+                  boxShadow: 3,
+                  overflow: "hidden",
+                  height: "100%", // makes all cards equal height
+                  display: "flex",
+                  flexDirection: "column",
                 }}
-              />
-            </Card>
+              >
+                <CardMedia
+                  component="img"
+                  image={banner.img}
+                  alt={banner.title}
+                  sx={{
+                    height: { xs: 300, sm: 350, md: 350 }, // smaller on mobile
+                    objectFit: "cover",
+                  }}
+                />
+              </Card>
+            </Link>
           </Box>
         ))}
       </Slider>
@@ -173,26 +175,31 @@ const Deals = () => {
               mt: { sm: "2vw", xs: "12vw" },
             }}
           >
-            <Card
-              sx={{
-                borderRadius: "12px",
-                boxShadow: 3,
-                overflow: "hidden",
-                height: "100%", // makes all cards equal height
-                display: "flex",
-                flexDirection: "column",
-              }}
+            <Link
+              to={`/products/`}
+              style={{ textDecoration: "none", color: "inherit" }}
             >
-              <CardMedia
-                component="img"
-                image={banner.img}
-                alt={banner.title}
+              <Card
                 sx={{
-                  height: { xs: 300, sm: 350, md: 350 }, // smaller on mobile
-                  objectFit: "cover",
+                  borderRadius: "12px",
+                  boxShadow: 3,
+                  overflow: "hidden",
+                  height: "100%", // makes all cards equal height
+                  display: "flex",
+                  flexDirection: "column",
                 }}
-              />
-            </Card>
+              >
+                <CardMedia
+                  component="img"
+                  image={banner.img}
+                  alt={banner.title}
+                  sx={{
+                    height: { xs: 300, sm: 350, md: 350 }, // smaller on mobile
+                    objectFit: "cover",
+                  }}
+                />
+              </Card>
+            </Link>
           </Box>
         ))}
       </Slider>

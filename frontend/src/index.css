@@ -4,3 +4,7 @@ body {
   font-family: "Poppins", sans-serif;
    
 }
+
+.app {
+  margin-top: 64px; /* equal to navbar height */
+}
