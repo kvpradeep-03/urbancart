@@ -17,6 +17,7 @@ import CardContent from "@mui/material/CardContent";
 import CardActionArea from "@mui/material/CardActionArea";
 import { Categories } from "../assets/assert";
 import Slider from "@mui/material/Slider";
+import { Link } from "react-router-dom";
 
 const Products = () => {
   //stores selected categories like shoes shirts
@@ -84,14 +85,14 @@ const Products = () => {
   //   .then(res => res.json())
   //   .then(data => console.log(data));
   // };
-
-  // useEffect(() => {
-  //   axios
-  //     .get("http://localhost:8000/api/products")
-  //     .then((result) => setProducts(result.data))
-  //     .catch((error) => console.log(error));
-  // }, []);
-
+  const [products, setProducts] = useState([]);
+  useEffect(() => {
+    axios
+      .get("http://localhost:8000/api/products")
+      .then((result) => setProducts(result.data))
+      .catch((error) => console.log(error));
+  }, []);
+  console.log(products);
   return (
     <Stack
       direction={{ xs: "column", sm: "row" }}
@@ -239,32 +240,33 @@ const Products = () => {
             spacing={{ xs: 0, sm: 2, lg: 2 }}
             justifyContent="center"
           >
-            {categories.map((category) => (
+            {products.map((product) => (
               <Grid
                 size={{ xs: 6, sm: 6, lg: 3 }}
-                key={category.id}
-                sx={{ px: { xs: 0, sm: 1 } }} 
+                key={product.id}
+                sx={{ px: { xs: 0, sm: 1 } }}
               >
                 <Card sx={{ Width: "100%" }}>
-                  <CardActionArea>
+                  <CardActionArea
+                  component={Link}
+                  to={`/product/${product.slug}`}
+                  >
                     <CardMedia
                       component="img"
                       height="280"
                       image="../../public/sampleimg.webp"
-                      alt="green iguana"
-                      objectFit="fill"
+                      alt={product.name}
                       sx={{ objectFit: "cover", width: "100%" }}
                     />
                     <CardContent>
                       <Typography gutterBottom variant="h5" component="div">
-                        Product Title
+                        {product.name}
                       </Typography>
                       <Typography
                         variant="body2"
                         sx={{ color: "text.secondary" }}
                       >
-                        Product short one line description goes here.while
-                        clicking It provides a brief overview of the product
+                        {product.description}
                       </Typography>
                       <Typography
                         gutterBottom
@@ -272,7 +274,7 @@ const Products = () => {
                         component="div"
                         sx={{ mt: 1 }}
                       >
-                        Rs.899 60%off
+                        {product.price}
                       </Typography>
                     </CardContent>
                   </CardActionArea>
