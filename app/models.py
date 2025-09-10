@@ -90,7 +90,9 @@ class Product(models.Model):
     category = models.CharField(max_length=50, choices=CATEGORY)
     gender = models.CharField(max_length=20, choices=GENDER, default="unisex")
     ratings = models.FloatField(default=0.0)
-    price = models.IntegerField(blank=True, null=True)
+    original_price = models.IntegerField(default=0)
+    discount_percentage = models.IntegerField(default=0)
+    discount_price = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -110,6 +112,14 @@ class Product(models.Model):
                 counter += 1
 
             self.slug = unique_slug
+
+        # Calculates discount & price
+        if self.discount_percentage and self.original_price:
+            discount_amount = (self.discount_percentage / 100) * self.original_price
+            self.discount_price = self.original_price - discount_amount
+        else:
+            # No discount → keep price same as original
+            self.discount_price = self.original_price
 
         super().save(*args, **kwargs)
 

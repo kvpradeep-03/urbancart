@@ -248,34 +248,70 @@ const Products = () => {
               >
                 <Card sx={{ Width: "100%" }}>
                   <CardActionArea
-                  component={Link}
-                  to={`/product/${product.slug}`}
+                    component={Link}
+                    to={`/product/${product.slug}`}
                   >
                     <CardMedia
                       component="img"
                       height="280"
-                      image="../../public/sampleimg.webp"
+                      image={product.thumbnail}
                       alt={product.name}
                       sx={{ objectFit: "cover", width: "100%" }}
                     />
                     <CardContent>
-                      <Typography gutterBottom variant="h5" component="div">
+                      <Typography gutterBottom variant="h6" component="div">
                         {product.name}
                       </Typography>
                       <Typography
                         variant="body2"
                         sx={{ color: "text.secondary" }}
                       >
-                        {product.description}
+                        {product.description.length > 60
+                          ? product.description.slice(0, 60) + "..."
+                          : product.description}
                       </Typography>
-                      <Typography
-                        gutterBottom
-                        variant="body3"
-                        component="div"
-                        sx={{ mt: 1 }}
+
+                      {/* Price Section */}
+                      <Box
+                        sx={{
+                          mt: 1,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
                       >
-                        {product.price}
-                      </Typography>
+                        {/* Discounted Price */}
+                        <Typography
+                          variant="h6"
+                          sx={{ fontSize: {xs:"10px",md:"12px", lg: "16px" }, fontWeight: 500 }}
+                        >
+                          Rs. {product.discount_price}
+                        </Typography>
+
+                        {/* Original Price with strikethrough */}
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            textDecoration: "line-through",
+                            color: "text.secondary",
+                            fontSize: {xs:"10px",md:"12px", lg: "16px"}
+                          }}
+                        >
+                          Rs. {product.original_price}
+                        </Typography>
+
+                        {/* Discount info */}
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: "error.main",
+                            fontSize: {xs:"10px",md:"12px", lg: "16px"},
+                            fontWeight: "small",
+                          }}
+                        >
+                          ({product.discount_percentage}% OFF)
+                        </Typography>
+                      </Box>
                     </CardContent>
                   </CardActionArea>
                 </Card>
