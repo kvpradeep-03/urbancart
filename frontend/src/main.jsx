@@ -5,9 +5,12 @@ import App from "./App.jsx";
 import "./index.css";
 
 import { CssBaseline } from "@mui/material";
+import { CartProvider } from "./context/CartContext.jsx";
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <CssBaseline />
-    <App />
+    <CartProvider>
+      <App />
+    </CartProvider>
   </BrowserRouter>
 );

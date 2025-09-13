@@ -1,8 +1,15 @@
 from rest_framework import serializers
-from .models import Product
+from .models import Product, ProductImage
+
 
 # serializers to convert your model data into JSON (and vice versa)
 # It also validates incoming JSON and converts it back into model objects.
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ("id", "image")  # DRF will return the image URL
+
+
 class ProductSerializers(serializers.ModelSerializer):
     # serializers.ModelSerializer -> Automatically creates a serializer based on your model
     # only need to tell it which model and fields to use
@@ -11,9 +18,11 @@ class ProductSerializers(serializers.ModelSerializer):
     # whenever this field is serialized like this.
     thumbnail = serializers.SerializerMethodField()
     discount_amount = serializers.SerializerMethodField()
+    images = ProductImageSerializer(many=True, read_only=True)  # related_name="images"
+
     class Meta:
         # Tells it which model to serialize.
-        model = Product  
+        model = Product
         # List the fields you want in your API response.
         fields = [
             "id",
@@ -22,10 +31,12 @@ class ProductSerializers(serializers.ModelSerializer):
             "thumbnail",
             "description",
             "category",
+            "ratings",
             "original_price",
-            "discount_price", # price after discount
+            "discount_price",  # price after discount
             "discount_percentage",
             "discount_amount",  # how much money is discounted
+            "images",
         ]
 
     # When DRF serializes an object, it sees "discount_amount" is a
