@@ -14,7 +14,7 @@ def products(request):
 
 
 class ViewProducts(RetrieveAPIView):
-    # here var like serializer_class, queryset, and lookup_field are fixed “keys” that DRF looks for.
+    # here were like serializer_class, queryset, and lookup_field are fixed “keys” that DRF looks for.
     # RetrieveAPIView is a built-in generic view from Django REST Framework (DRF).
     # Its job: Show one single object when we visit a URL. If we type /api/products/dennison/, it should show details of only the Dennison product.
     # It automatically provides get() method & 404 handling if the product doesn’t exist.

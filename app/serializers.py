@@ -16,8 +16,9 @@ class ProductSerializers(serializers.ModelSerializer):
 
     # SerializerMethodField tells DRF: "Call a method named get_<fieldname>()"
     # whenever this field is serialized like this.
-    thumbnail = serializers.SerializerMethodField()
     discount_amount = serializers.SerializerMethodField()
+    # many=True because a product can have multiple images
+    # read_only=True means this nested field is included in responses but not expected/used for creating/updating via the same serializer (to support writes you’d need custom create/update logic).
     images = ProductImageSerializer(many=True, read_only=True)  # related_name="images"
 
     class Meta:
@@ -31,6 +32,7 @@ class ProductSerializers(serializers.ModelSerializer):
             "thumbnail",
             "description",
             "category",
+            "size",
             "ratings",
             "original_price",
             "discount_price",  # price after discount
@@ -45,12 +47,6 @@ class ProductSerializers(serializers.ModelSerializer):
     # and calls it automatically, passing in the current Product instance.
     #
     # You never call this yourself. DRF does it when you call serializer.data.
-
-    def get_thumbnail(self, obj):
-        request = self.context.get("request")  # get current request
-        if obj.thumbnail:  # if an image exists
-            return request.build_absolute_uri(obj.thumbnail.url)
-        return None
 
     def get_discount_amount(self, obj):
         # "obj" here is a single Product instance.

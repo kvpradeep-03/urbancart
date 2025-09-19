@@ -234,7 +234,7 @@ const Products = () => {
       </Box>
 
       <Box>
-        <Box sx={{ flexGrow: 1, p: { xs: 0, sm: 2 } }}>
+        <Box sx={{ flexGrow: 1, p: { xs: 0, sm: 2 }, mb:6,mt:3 }}>
           <Grid
             container
             spacing={{ xs: 0, sm: 2, lg: 2 }}

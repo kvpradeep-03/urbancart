@@ -2,12 +2,12 @@ from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
 
+
 # Create your models here.
 class Product(models.Model):
     CATEGORY = (
         # First value = machine-friendly (slug format, lowercase).
         # Second value = human-friendly (uppercase, for admin panel).
-        
         # Men
         ("t-shirts", "T-SHIRTS"),
         ("casual shirts", "CASUAL SHIRTS"),
@@ -20,7 +20,6 @@ class Product(models.Model):
         ("sweatshirts", "SWEATSHIRTS"),
         ("blazers", "BLAZERS"),
         ("suits", "SUITS"),
-
         # Women
         ("tops", "TOPS"),
         ("skirts", "SKIRTS"),
@@ -31,7 +30,6 @@ class Product(models.Model):
         ("salwar suits", "SALWAR SUITS"),
         ("jackets-women", "JACKETS"),
         ("sweaters", "SWEATERS"),
-
         # Kids
         ("t-shirts-kids", "KIDS T-SHIRTS"),
         ("shirts-kids", "KIDS SHIRTS"),
@@ -39,7 +37,6 @@ class Product(models.Model):
         ("frocks", "FROCKS"),
         ("skirts-kids", "KIDS SKIRTS"),
         ("ethnic-wear-kids", "ETHNIC WEAR"),
-
         # Shoes
         ("sports-shoes", "SPORTS SHOES"),
         ("casual-shoes", "CASUAL SHOES"),
@@ -47,13 +44,11 @@ class Product(models.Model):
         ("boots", "BOOTS"),
         ("heels", "HEELS"),
         ("flats", "FLATS"),
-
         # Slippers & Sandals
         ("slippers", "SLIPPERS"),
         ("sandals", "SANDALS"),
         ("flip-flops", "FLIP-FLOPS"),
         ("crocs", "CROCS"),
-
         # Fashion Accessories
         ("watches", "WATCHES"),
         ("belts", "BELTS"),
@@ -63,12 +58,10 @@ class Product(models.Model):
         ("sunglasses", "SUNGLASSES"),
         ("jewellery", "JEWELLERY"),
         ("caps", "CAPS"),
-
         # Beauty
         ("makeup", "MAKEUP"),
         ("skincare", "SKINCARE"),
         ("haircare", "HAIRCARE"),
-
         # Perfumes
         ("perfumes-men", "PERFUMES (MEN)"),
         ("perfumes-women", "PERFUMES (WOMEN)"),
@@ -81,6 +74,14 @@ class Product(models.Model):
         ("unisex", "Unisex"),
     )
 
+    SIZE_CHOICES = [
+        ("S M L XL XXL", "S M L XL XXL"),
+        ("26 28 30 32 34 36", "26 28 30 32 34 36"),
+        ("6 7 8 9 10 11 12", "6 7 8 9 10 11 12"),
+        ("OneSize", "One Size"),
+        ("","")
+    ]
+
     name = models.CharField(max_length=100)
     slug = models.SlugField(blank=True, null=True)
     thumbnail = models.ImageField(
@@ -88,6 +89,7 @@ class Product(models.Model):
     )
     description = models.TextField(blank=True, null=True)
     category = models.CharField(max_length=50, choices=CATEGORY)
+    size = models.CharField(max_length=20, choices=SIZE_CHOICES, blank=True, default="")
     gender = models.CharField(max_length=20, choices=GENDER, default="unisex")
     ratings = models.FloatField(default=0.0)
     original_price = models.IntegerField(default=0)

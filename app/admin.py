@@ -16,6 +16,7 @@ class ProductAdmin(admin.ModelAdmin):
         "id",
         "name",
         "category",
+        "size",
         "gender",
         "ratings",
         "original_price",
@@ -24,6 +25,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = (
         "name",
         "category",
+        "size",
         "gender",
         "ratings",
         "original_price",
