@@ -7,6 +7,7 @@ import { ThemeProvider, CssBaseline } from "@mui/material";
 import theme from "./theme";
 import Footer from "./components/Footer";
 import Viewproducts from "./pages/Viewproducts";
+import Cart from "./pages/Cart";
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
           <Route path="/product/:slug" element={<Viewproducts />} />
+          <Route path="/cart" element={<Cart/>} />
         </Routes>
       </ThemeProvider>
       <Footer />

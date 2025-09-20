@@ -32,13 +32,15 @@ import { IoStar } from "react-icons/io5";
 
 export default function Viewproducts() {
   const { slug } = useParams();
+  const { addToCart, cart } = useContext(CartContext);
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { addToCart } = useContext(CartContext);
-  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedSize, setSelectedSize] = useState({});
   // for similar products
   const [products, setProducts] = useState([]);
+  // check if product is already in cart if yes sets true else false , doing this to prevent null error on initial render
+  const inCart = product ? cart.some((p) => p.id === product.id) : false;
 
   // for similar products
   useEffect(() => {
@@ -48,31 +50,29 @@ export default function Viewproducts() {
       .catch((error) => console.log(error));
   }, []);
 
-useEffect(() => {
-  setLoading(true);
-  setError(null);
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
 
-  axios
-    .get(`http://localhost:8000/api/products/${slug}/`)
-    .then((res) => {
-      setProduct(res.data);
-    })
-    .catch((err) => {
-      console.error(err);
-      setError("Failed to load product");
-    })
-    .finally(() => setLoading(false));
-}, [slug]);
+    axios
+      .get(`http://localhost:8000/api/products/${slug}/`)
+      .then((res) => {
+        setProduct(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("Failed to load product");
+      })
+      .finally(() => setLoading(false));
+  }, [slug]);
 
-// derive sizes from product AFTER product is set
-const sizesArray = product?.size ? product.size.split(" ") : [];
-
-  
+  // derive sizes from product AFTER product is set
+  const sizesArray = product?.size ? product.size.split(" ") : [];
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
   if (!product) return <div>Product not found</div>;
-
+console.log(selectedSize)
   const NextArrow = ({ onClick }) => (
     <IconButton
       onClick={onClick}
@@ -238,7 +238,12 @@ const sizesArray = product?.size ? product.size.split(" ") : [];
                   <Button
                     variant="outlined"
                     key={index}
-                    onClick={() => setSelectedSize(index)} // set clicked one
+                    onClick={() =>
+                      setSelectedSize((prev) => ({
+                        ...prev,
+                        [product.id]: size,
+                      }))
+                    } // set clicked one
                     sx={{
                       bgcolor: "#fffefe",
                       color: "black",
@@ -250,7 +255,7 @@ const sizesArray = product?.size ? product.size.split(" ") : [];
                         border: "1px solid",
                         borderColor: "error.main",
                       },
-                      ...(selectedSize === index && {
+                      ...(selectedSize[product.id] === size && {
                         border: "1px solid",
                         borderColor: "error.main",
                       }),
@@ -274,9 +279,11 @@ const sizesArray = product?.size ? product.size.split(" ") : [];
                 alignSelf: { xs: "center", md: "flex-start" },
                 mt: 4,
               }}
-              onClick={() => addToCart(product)}
+              onClick={() =>
+                addToCart(product, { selected_size: selectedSize[product.id] })
+              }
             >
-              Add to Bag
+              {inCart ? "Add one more" : "Add to cart"}
             </Button>
           </Box>
 
@@ -491,7 +498,7 @@ const sizesArray = product?.size ? product.size.split(" ") : [];
         </Typography>
       </Divider>
 
-      <Box sx={{ flexGrow: 1, p: { xs: 0, sm: 2 }, mt:3, mb:6}}>
+      <Box sx={{ flexGrow: 1, p: { xs: 0, sm: 2 }, mt: 3, mb: 6 }}>
         <Grid
           container
           spacing={{ xs: 0, sm: 2, lg: 2 }}

@@ -24,16 +24,18 @@ import { Link } from "react-router-dom";
 const drawerWidth = 240;
 const navItems = [
   <CustomizedMenus />,
-  <Box
-    sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}
-  >
-    <SvgIcon
-      component={GiShoppingBag}
-      inheritViewBox
-      sx={{ fontSize: { xs: 16, sm: 20 }, display: "block" }}
-    />
-    <Typography sx={{ textTransform: "none" }}>Bag</Typography>
-  </Box>,
+  <Link to="/cart" style={{ textDecoration: "none", color: "inherit" }}>
+    <Box
+      sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}
+    >
+      <SvgIcon
+        component={GiShoppingBag}
+        inheritViewBox
+        sx={{ fontSize: { xs: 16, sm: 20 }, display: "block" }}
+      />
+      <Typography sx={{ textTransform: "none" }}>Bag</Typography>
+    </Box>
+  </Link>,
   <Box
     sx={{ display: "flex", alignItems: "center", cursor: "pointer", gap: 1 }}
   >
