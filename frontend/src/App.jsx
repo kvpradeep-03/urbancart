@@ -8,6 +8,7 @@ import theme from "./theme";
 import Footer from "./components/Footer";
 import Viewproducts from "./pages/Viewproducts";
 import Cart from "./pages/Cart";
+import Dialogbox from "./components/Dialogbox";
 
 const App = () => {
   return (
@@ -19,7 +20,8 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
           <Route path="/product/:slug" element={<Viewproducts />} />
-          <Route path="/cart" element={<Cart/>} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/cart/dialog" element={<Dialogbox />} />
         </Routes>
       </ThemeProvider>
       <Footer />

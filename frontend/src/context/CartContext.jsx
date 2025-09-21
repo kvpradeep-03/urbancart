@@ -39,7 +39,7 @@ export const CartProvider = ({ children }) => {
           p.id === product.id ? { ...p, ...options, qty: p.qty + qty } : p
         );
       }
-      return [...prev, { ...product, ... options, qty }];
+      return [...prev, { ...product, ...options, qty }];
     });
   }, []);
 
@@ -64,6 +64,17 @@ export const CartProvider = ({ children }) => {
   // derived values
   // usememo to avoid recalculating on every render unless cart changes
   const totalItems = useMemo(() => cart.reduce((s, p) => s + p.qty, 0), [cart]);
+
+  const totalMrpPrice = useMemo(
+    () => cart.reduce((s, p) => s + (p.original_price || 0) * p.qty, 0),
+    [cart]
+  );
+
+    const totalDiscountPrice = useMemo(
+      () => cart.reduce((s, p) => s + (p.discount_amount || 0) * p.qty, 0),
+      [cart]
+    );
+
   const totalPrice = useMemo(
     () => cart.reduce((s, p) => s + (p.discount_price || 0) * p.qty, 0),
     [cart]
@@ -84,6 +95,8 @@ export const CartProvider = ({ children }) => {
       updateQty,
       clearCart,
       totalItems,
+      totalMrpPrice,
+      totalDiscountPrice,
       totalPrice,
     }),
     [
@@ -93,6 +106,8 @@ export const CartProvider = ({ children }) => {
       updateQty,
       clearCart,
       totalItems,
+      totalMrpPrice,
+      totalDiscountPrice,
       totalPrice,
     ]
   );
