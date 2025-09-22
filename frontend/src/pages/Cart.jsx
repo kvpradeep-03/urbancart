@@ -11,14 +11,23 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
 import { CartContext } from "../context/CartContext";
 import { useContext } from "react";
-import { Button, Divider, Stack, SvgIcon, TextField } from "@mui/material";
+import {
+  Button,
+  Divider,
+  Stack,
+  SvgIcon,
+  TextField,
+} from "@mui/material";
 import { GoTag } from "react-icons/go";
 import Dialogbox from "../components/Dialogbox";
-import { useNavigate } from "react-router-dom";
+import {useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useToast } from "../context/ToastContext";
 
 const Cart = () => {
   const theme = useTheme();
+  const toast = useToast();
+  const navigate = useNavigate();
   const {
     cart,
     removeFromCart,
@@ -47,9 +56,11 @@ const Cart = () => {
       <Box>
         {/* <h2>Cart ({totalItems})</h2> */}
         {cart.map((item) => (
+         
           <Card
             key={item.id}
-            sx={{ display: "flex", m: 1, border: "1px solid #ccc" }}
+            sx={{ display: "flex", m: 1, border: "1px solid #ccc", cursor: "pointer" }}
+            onClick={() => navigate(`/product/${item.slug}`)}
           >
             <CardMedia
               component="img"
@@ -126,7 +137,11 @@ const Cart = () => {
                 <Button
                   variant="contained"
                   color="error"
-                  onClick={() => removeFromCart(item.id)}
+                  onClick={(e) => {
+                    e.stopPropagation(); // prevent card click
+                    removeFromCart(item.id),
+                      toast.error("Product removed from cart");
+                  }}
                 >
                   Remove
                 </Button>

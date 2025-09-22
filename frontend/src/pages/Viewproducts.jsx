@@ -22,13 +22,13 @@ import {
   Card,
   Grid,
   CardContent,
-  Avatar,
 } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import { CiDeliveryTruck } from "react-icons/ci";
 import { TbPointFilled } from "react-icons/tb";
 import { GoTag } from "react-icons/go";
 import { IoStar } from "react-icons/io5";
+import { useToast } from "../context/ToastContext";
 
 export default function Viewproducts() {
   const { slug } = useParams();
@@ -37,10 +37,15 @@ export default function Viewproducts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedSize, setSelectedSize] = useState({});
+  
   // for similar products
   const [products, setProducts] = useState([]);
+  
   // check if product is already in cart if yes sets true else false , doing this to prevent null error on initial render
   const inCart = product ? cart.some((p) => p.id === product.id) : false;
+
+  // Toast notification
+  const toast = useToast();
 
   // for similar products
   useEffect(() => {
@@ -50,6 +55,7 @@ export default function Viewproducts() {
       .catch((error) => console.log(error));
   }, []);
 
+  // fetch product details based on slug
   useEffect(() => {
     setLoading(true);
     setError(null);
@@ -68,11 +74,9 @@ export default function Viewproducts() {
 
   // derive sizes from product AFTER product is set
   const sizesArray = product?.size ? product.size.split(" ") : [];
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
-  if (!product) return <div>Product not found</div>;
-console.log(selectedSize)
+  console.log(selectedSize);
+  
+  // Custom Arrows for the slider
   const NextArrow = ({ onClick }) => (
     <IconButton
       onClick={onClick}
@@ -102,7 +106,8 @@ console.log(selectedSize)
       <ArrowBackIos />
     </IconButton>
   );
-
+  
+  // Slider settings
   const settings = {
     /**
      * react-slick is a popular React wrapper around the Slick Carousel library.
@@ -120,6 +125,10 @@ console.log(selectedSize)
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
   };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+  if (!product) return <div>Product not found</div>;
 
   return (
     <>
@@ -273,15 +282,18 @@ console.log(selectedSize)
 
             <Button
               variant="contained"
-              color="warning"
+              color="success"
               sx={{
                 width: { xs: "100%", sm: "60%", md: "50%" },
                 alignSelf: { xs: "center", md: "flex-start" },
                 mt: 4,
               }}
-              onClick={() =>
-                addToCart(product, { selected_size: selectedSize[product.id] })
-              }
+              onClick={() => {
+                addToCart(product, { selected_size: selectedSize[product.id] });
+                inCart
+                  ? toast.success("Added one more product!")
+                  : toast.success("Product added to cart!");
+              }}
             >
               {inCart ? "Add one more" : "Add to cart"}
             </Button>
@@ -485,6 +497,7 @@ console.log(selectedSize)
           </Box>
         </Box>
       </Stack>
+     
       <Divider sx={{ mt: { sm: "6vw", xs: "16vw" } }}>
         <Typography
           variant="h4"
@@ -497,7 +510,8 @@ console.log(selectedSize)
           Similar Products
         </Typography>
       </Divider>
-
+     
+      {/* // Similar Products Section */}
       <Box sx={{ flexGrow: 1, p: { xs: 0, sm: 2 }, mt: 3, mb: 6 }}>
         <Grid
           container
