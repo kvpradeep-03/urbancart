@@ -15,44 +15,77 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import CustomizedMenus from "./Account";
-import { GiShoppingBag } from "react-icons/gi";
-import { SvgIcon } from "@mui/material";
+import { BsCart3 } from "react-icons/bs";
+import { Badge, SvgIcon } from "@mui/material";
 import { BsShopWindow } from "react-icons/bs";
 import Search from "./Search";
 import { Link } from "react-router-dom";
+import { useContext } from "react";
+import { CartContext } from "../../context/CartContext";
 
-const drawerWidth = 240;
-const navItems = [
-  <CustomizedMenus />,
-  <Link to="/cart" style={{ textDecoration: "none", color: "inherit" }}>
+const Navbar = () => {
+  const { totalItems } = useContext(CartContext);
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+  
+  const navItems = [
+    <CustomizedMenus />,
+    <Link to="/cart" style={{ textDecoration: "none", color: "inherit" }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          cursor: "pointer",
+        }}
+      >
+        <Badge
+          badgeContent={totalItems}
+          color="error"
+          sx={{
+            "& .MuiBadge-badge": {
+              fontSize: 10,
+              minWidth: 16,
+              height: 16,
+            },
+          }}
+        >
+          <SvgIcon
+            component={BsCart3}
+            inheritViewBox
+            sx={{ fontSize: { xs: 16, sm: 20 }, display: "block" }}
+          />
+        </Badge>
+        <Typography
+          sx={{
+            textTransform: "none",
+          }}
+        >
+          Cart
+        </Typography>
+      </Box>
+    </Link>,
     <Box
-      sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        cursor: "pointer",
+        gap: 1,
+      }}
     >
       <SvgIcon
-        component={GiShoppingBag}
+        component={BsShopWindow}
         inheritViewBox
         sx={{ fontSize: { xs: 16, sm: 20 }, display: "block" }}
       />
-      <Typography sx={{ textTransform: "none" }}>Bag</Typography>
-    </Box>
-  </Link>,
-  <Box
-    sx={{ display: "flex", alignItems: "center", cursor: "pointer", gap: 1 }}
-  >
-    <SvgIcon
-      component={BsShopWindow}
-      inheritViewBox
-      sx={{ fontSize: { xs: 16, sm: 20 }, display: "block" }}
-    />
-    <Typography sx={{ textTransform: "none" }}>Become a Seller</Typography>
-  </Box>,
-];
+      <Typography sx={{ textTransform: "none" }}>Become a Seller</Typography>
+    </Box>,
+  ];
 
-const Navbar = () => {
-  const [mobileOpen, setMobileOpen] = React.useState(false);
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
   };
+  
+  const drawerWidth = 240;
 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>

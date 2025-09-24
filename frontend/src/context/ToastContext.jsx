@@ -19,15 +19,15 @@ export const useToast = () => {
 
   return {
     success: (msg) =>
-      enqueueSnackbar(msg, { variant: "success", autoHideDuration: 2000 }),
+      enqueueSnackbar(msg, { variant: "success", autoHideDuration: 1000 }),
     error: (msg) =>
-      enqueueSnackbar(msg, { variant: "error", autoHideDuration: 2000 }),
+      enqueueSnackbar(msg, { variant: "error", autoHideDuration: 1000 }),
     warning: (msg) =>
-      enqueueSnackbar(msg, { variant: "warning", autoHideDuration: 2000 }),
+      enqueueSnackbar(msg, { variant: "warning", autoHideDuration: 1000 }),
     info: (msg) =>
-      enqueueSnackbar(msg, { variant: "info", autoHideDuration: 2000 }),
+      enqueueSnackbar(msg, { variant: "info", autoHideDuration: 1000 }),
     default: (msg) =>
-      enqueueSnackbar(msg, { variant: "default", autoHideDuration: 2000 }),
+      enqueueSnackbar(msg, { variant: "default", autoHideDuration: 1000 }),
   };
 };
 

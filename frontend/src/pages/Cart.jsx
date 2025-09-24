@@ -11,18 +11,15 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
 import { CartContext } from "../context/CartContext";
 import { useContext } from "react";
-import {
-  Button,
-  Divider,
-  Stack,
-  SvgIcon,
-  TextField,
-} from "@mui/material";
+import { Button, Divider, Stack, SvgIcon, TextField } from "@mui/material";
 import { GoTag } from "react-icons/go";
 import Dialogbox from "../components/Dialogbox";
-import {useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "../context/ToastContext";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+
 
 const Cart = () => {
   const theme = useTheme();
@@ -31,7 +28,8 @@ const Cart = () => {
   const {
     cart,
     removeFromCart,
-    updateQty,
+    incQty,
+    decQty,
     totalItems,
     totalMrpPrice,
     totalDiscountPrice,
@@ -50,21 +48,24 @@ const Cart = () => {
       direction={{ xs: "column", md: "row" }} // column on mobile, row on desktop
       justifyContent="space-between"
       alignItems={{ xs: "center", md: "flex-start" }}
-      mt={2}
-      px={{ xs: 2, md: 20 }}
+      m={2}
+      px={{ xs: 0, md: 35 }}
     >
-      <Box>
-        {/* <h2>Cart ({totalItems})</h2> */}
+      <Box width={"100%"}>
         {cart.map((item) => (
-         
           <Card
-            key={item.id}
-            sx={{ display: "flex", m: 1, border: "1px solid #ccc", cursor: "pointer" }}
+            key={`${item.slug}-${Math.random(1, 100)}`}
+            sx={{
+              display: "flex",
+              m: 1,
+              border: "1px solid #ccc",
+              cursor: "pointer",
+            }}
             onClick={() => navigate(`/product/${item.slug}`)}
           >
             <CardMedia
               component="img"
-              sx={{ width: 151, m: 1 }}
+              sx={{ width: {xs:140, md: 130 }, m: 1 }}
               image={item.thumbnail}
               alt={item.name}
             />
@@ -85,7 +86,7 @@ const Cart = () => {
                   component="div"
                   sx={{ color: "text.secondary" }}
                 >
-                  size: {item.selected_size} qty: {item.qty}
+                  size: {item.options.selected_size} qty: {item.qty}
                 </Typography>
 
                 <Box
@@ -132,14 +133,68 @@ const Cart = () => {
                   </Typography>
                 </Box>
               </CardContent>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 0.5,
+                  px: 0.5,
+                  py: 0.5,
+                  m: 1,
+                  mt: 0,
+                  borderRadius: 2,
+                  width: "fit-content",
+                }}
+                onClick={(e) => e.stopPropagation()} // prevent card navigation
+              >
+                <SvgIcon
+                  component={RemoveCircleOutlineIcon}
+                  inheritViewBox
+                  sx={{
+                    fontSize: 24,
+                    cursor: "pointer",
+                    color: "action.active",
+                    "&:hover": { color: "error.main" },
+                  }}
+                  onClick={() => {
+                    if (item.qty > 1)
+                      decQty(item.id, {
+                        selected_size: item.options.selected_size,
+                      });
+                  }}
+                />
+
+                <Typography variant="body1" sx={{ mx: 1 }}>
+                  {item.qty}
+                </Typography>
+
+                <SvgIcon
+                  component={AddCircleOutlineIcon}
+                  inheritViewBox
+                  sx={{
+                    fontSize: 24,
+                    cursor: "pointer",
+                    color: "action.active",
+                    "&:hover": { color: "success.main" },
+                  }}
+                  onClick={() => {
+                    incQty(item.id, {
+                      selected_size: item.options.selected_size,
+                    });
+                  }}
+                />
+              </Box>
 
               <Box sx={{ display: "flex", alignItems: "center", pl: 1, pb: 1 }}>
                 <Button
-                  variant="contained"
+                  variant="outlined"
                   color="error"
                   onClick={(e) => {
-                    e.stopPropagation(); // prevent card click
-                    removeFromCart(item.id),
+                    e.stopPropagation();
+                    removeFromCart(item.id, {
+                      selected_size: item.options.selected_size,
+                    }),
                       toast.error("Product removed from cart");
                   }}
                 >
@@ -148,22 +203,14 @@ const Cart = () => {
               </Box>
             </Box>
           </Card>
-          // <div key={item.id}>
-          //   <img src={item.thumbnail} alt={item.name} width={60} />
-          //   <p>{item.name}</p>
-          //   <p>₹{item.original_price}</p>
-          //   <p>₹{item.description}</p>
-          //   <input
-          //     type="number"
-          //     min="1"
-          //     value={item.qty}
-          //     onChange={(e) => updateQty(item.id, Number(e.target.value))}
-          //   />
-          //   <button onClick={() => removeFromCart(item.id)}>Remove</button>
-          // </div>
         ))}
 
-        <Button variant="contained" color="info" onClick={clearCart}>
+        <Button
+          variant="contained"
+          color="warning"
+          sx={{ m: 1 }}
+          onClick={clearCart}
+        >
           Clear Cart
         </Button>
       </Box>
@@ -176,8 +223,6 @@ const Cart = () => {
           mt: 1,
           display: "flex",
           flexDirection: "column",
-
-          mb: 1,
           gap: 1,
         }}
       >
@@ -207,7 +252,7 @@ const Cart = () => {
           </Typography>
           <Button
             variant="outlined"
-            color="success"
+            color="warning"
             size="small"
             onClick={() => setOpen(true)}
           >
@@ -366,6 +411,9 @@ const Cart = () => {
             </Typography>
           </Box>
         </Box>
+        <Button variant="outlined" color="success">
+          Place Order
+        </Button>
       </Card>
     </Stack>
   );

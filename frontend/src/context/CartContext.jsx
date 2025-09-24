@@ -7,6 +7,7 @@ import React, {
   useMemo,
 } from "react";
 
+//TODO: fix the size issue in cart (should be able to add different sizes of same product)
 export const CartContext = createContext(null);
 
 // cartProvider component wraps the app and provides cart values to any nested components in app
@@ -33,50 +34,95 @@ export const CartProvider = ({ children }) => {
     //options can hold anything: size, color, customizations, etc.
     //...options spreads those into the product object before adding it to the cart.
     setCart((prev) => {
-      const existing = prev.find((p) => p.id === product.id);
+      const existing = prev.find(
+        (p) =>
+          p.id === product.id &&
+          JSON.stringify(p.options) === JSON.stringify(options) // compare options too
+      );
+
       if (existing) {
+        // inc qty if same product + same options
         return prev.map((p) =>
-          p.id === product.id ? { ...p, ...options, qty: p.qty + qty } : p
+          p.id === product.id &&
+          JSON.stringify(p.options) === JSON.stringify(options)
+            ? { ...p, qty: p.qty + 1 }
+            : p
         );
       }
-      return [...prev, { ...product, ...options, qty }];
+      //we are storing options(size,color, etc..) inside the each product object in cart
+      return [...prev, { ...product, options, qty }];
     });
   }, []);
 
-  // remove full item by id
-  const removeFromCart = useCallback(
-    (id) => setCart((prev) => prev.filter((p) => p.id !== id)),
-    []
-  );
+  // Increase quantity for an item (ensures qty is at least 1)
+  const incQty = useCallback((id, options = {}) => {
+    setCart((prev) => {
+      // Find the existing item with the same product ID and identical options
+      const existing = prev.find(
+        (p) =>
+          p.id === id && JSON.stringify(p.options) === JSON.stringify(options)
+      );
+      // If the item exists, create a new array with the quantity incremented
+      if (existing) {
+        return prev.map((p) =>
+          p.id === id && JSON.stringify(p.options) === JSON.stringify(options)
+            ? { ...p, qty: p.qty + 1 }
+            : p
+        );
+      }
+      // If the item doesn't exist, return the previous state unchanged
+      return prev;
+    });
+  }, []);
 
-  // update quantity for an item (ensure qty >= 1)
-  const updateQty = useCallback(
-    (id, qty) =>
-      setCart((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, qty: Math.max(1, qty) } : p))
-      ),
-    []
-  );
+  const decQty = useCallback((id, options = {}) => {
+    setCart((prev) => {
+      const existing = prev.find(
+        (p) =>
+          p.id === id && JSON.stringify(p.options) === JSON.stringify(options)
+      );
+      if (existing) {
+        return prev.map((p) =>
+          p.id === id && JSON.stringify(p.options) === JSON.stringify(options)
+            ? { ...p, qty: p.qty - 1 }
+            : p
+        );
+      }
+      return prev;
+    });
+  }, []);
+
+  const removeFromCart = useCallback((id, options = {}) => {
+    setCart((prev) =>
+      prev.filter(
+        (p) =>
+          p.id !== id || JSON.stringify(p.options) !== JSON.stringify(options)
+      )
+    );
+  }, []);
 
   // clear cart
   const clearCart = useCallback(() => setCart([]), []);
 
   // derived values
   // usememo to avoid recalculating on every render unless cart changes
-  const totalItems = useMemo(() => cart.reduce((s, p) => s + p.qty, 0), [cart]);
-
-  const totalMrpPrice = useMemo(
-    () => cart.reduce((s, p) => s + (p.original_price || 0) * p.qty, 0),
+  const totalItems = useMemo(
+    () => cart.reduce((sum, p) => sum + p.qty, 0),
     [cart]
   );
 
-    const totalDiscountPrice = useMemo(
-      () => cart.reduce((s, p) => s + (p.discount_amount || 0) * p.qty, 0),
-      [cart]
-    );
+  const totalMrpPrice = useMemo(
+    () => cart?.reduce((s, p) => s + (p.original_price || 0) * p.qty, 0),
+    [cart]
+  );
+
+  const totalDiscountPrice = useMemo(
+    () => cart?.reduce((s, p) => s + (p.discount_amount || 0) * p.qty, 0),
+    [cart]
+  );
 
   const totalPrice = useMemo(
-    () => cart.reduce((s, p) => s + (p.discount_price || 0) * p.qty, 0),
+    () => cart?.reduce((s, p) => s + (p.discount_price || 0) * p.qty, 0),
     [cart]
   );
 
@@ -92,7 +138,8 @@ export const CartProvider = ({ children }) => {
       cart,
       addToCart,
       removeFromCart,
-      updateQty,
+      incQty,
+      decQty,
       clearCart,
       totalItems,
       totalMrpPrice,
@@ -103,7 +150,8 @@ export const CartProvider = ({ children }) => {
       cart,
       addToCart,
       removeFromCart,
-      updateQty,
+      incQty,
+      decQty,
       clearCart,
       totalItems,
       totalMrpPrice,
