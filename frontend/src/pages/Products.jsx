@@ -43,7 +43,7 @@ const Products = () => {
 
   //price slider
   const MAX = 10000;
-  const MIN = 0;
+  const MIN = 700;
   const marks = [
     {
       value: MIN,
@@ -54,9 +54,10 @@ const Products = () => {
       label: "",
     },
   ];
-  const [val, setVal] = React.useState(MIN);
+  const [val, setVal] = useState(MIN);
   const handlePriceSort = (_, newValue) => {
     setVal(newValue);
+    console.log(val);
   };
 
   //Discount range
@@ -81,22 +82,25 @@ const Products = () => {
       .catch((error) => console.log(error));
   }, []);
 
-  //fetch filtered products
   useEffect(() => {
-  
-    const query = selectedCategories.map((cat) => `category=${cat}`).join("&");
-    axios
-      .get(`http://localhost:8000/api/products/?${query}`)
-      .then((result) => setProducts(result.data))
-      .then((error) => console.log(error));
-  }, [selectedCategories]);
+    //fetch filtered products
+    try {
+      const category_query = selectedCategories
+        .map((cat) => `category=${cat}`)
+        .join("&");
+      const price_query = `price=${val}`;
+      const discount_query = discount.map((d) => `discount=${d}`).join("&");
+      axios
+        .get(`http://localhost:8000/api/products/?${category_query}&${price_query}&${discount_query}`)
+        .then((result) => setProducts(result.data))
+        .then((error) => console.log(error));
+    } catch (error) {
+      console.log(error);
+    }
+  }, [selectedCategories, val, discount]);
 
   return (
-    <Stack
-      direction={{ xs: "column", sm: "row" }}
-      spacing={0}
-      mt={"auto"}
-    >
+    <Stack direction={{ xs: "column", sm: "row" }} spacing={0} mt={"auto"}>
       <Box
         sx={{
           display: { xs: "none", sm: "block" }, // hide on xs screens
@@ -255,7 +259,7 @@ const Products = () => {
                       sx={{
                         objectFit: "cover",
                         width: "100%",
-                        // height: { xs: 180, sm: 220, md: 280 }, // Adjust these values
+                        height: 280, // Adjust these values
                       }}
                     />
                     <CardContent>

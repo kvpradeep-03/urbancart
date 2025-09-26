@@ -11,10 +11,31 @@ def products(request):
     # gets multipe category from query params as a list like, /api/products/?category=t-shirts&category=jeanscategory=shoes&category=clothes to --> categories = ["t-shirts", "jeans"]
     categories = request.query_params.getlist("category")
     categories = [c.lower() for c in categories]  # normalize to match DB
+    price = request.query_params.get("price")
+    discount = request.query_params.get("discount")
     products = Product.objects.all()
+
+    # Apply category filter
     if categories:
         # category__in is a special Django ORM filter that checks if the category field of the Product model matches any value in the provided list.
-        products = Product.objects.filter(category__in=categories)
+        products = products.filter(category__in=categories)
+
+    # Apply price filter
+    if price:
+        try:
+            price_range = int(price)
+            products = products.filter(discount_price__lte=price_range)
+        except (ValueError, TypeError):
+            pass  # Ignore invalid price values
+
+    # Apply discount filter
+    if discount:
+        try:
+            discount_range = int(discount)
+            products = products.filter(discount_percentage__gte=discount_range)
+        except (ValueError, TypeError):
+            pass  # Ignore invalid discount values
+
     serializer = ProductSerializers(products, many=True, context={"request": request})
     return Response(serializer.data)
 
