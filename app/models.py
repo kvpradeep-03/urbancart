@@ -23,31 +23,30 @@ class Product(models.Model):
         # Women
         ("tops", "TOPS"),
         ("skirts", "SKIRTS"),
-        ("jeans-women", "JEANS"),
+        ("jeans", "JEANS"),
         ("leggings", "LEGGINGS"),
         ("kurtis", "KURTIS"),
         ("sarees", "SAREES"),
-        ("salwar suits", "SALWAR SUITS"),
-        ("jackets-women", "JACKETS"),
+        ("suits", "SUITS"),
+        ("jackets", "JACKETS"),
         ("sweaters", "SWEATERS"),
+        ("ethnic wear", "ETHNIC WEAR"),
         # Kids
-        ("t-shirts-kids", "KIDS T-SHIRTS"),
-        ("shirts-kids", "KIDS SHIRTS"),
-        ("shorts-kids", "KIDS SHORTS"),
+        ("kids t-shirts", "KIDS T-SHIRTS"),
+        ("kids shirts", "KIDS SHIRTS"),
+        ("kids shorts", "KIDS SHORTS"),
         ("frocks", "FROCKS"),
-        ("skirts-kids", "KIDS SKIRTS"),
-        ("ethnic-wear-kids", "ETHNIC WEAR"),
         # Shoes
-        ("sports-shoes", "SPORTS SHOES"),
-        ("casual-shoes", "CASUAL SHOES"),
-        ("formal-shoes", "FORMAL SHOES"),
+        ("sports shoes", "SPORTS SHOES"),
+        ("casual shoes", "CASUAL SHOES"),
+        ("formal shoes", "FORMAL SHOES"),
         ("boots", "BOOTS"),
         ("heels", "HEELS"),
         ("flats", "FLATS"),
         # Slippers & Sandals
         ("slippers", "SLIPPERS"),
         ("sandals", "SANDALS"),
-        ("flip-flops", "FLIP-FLOPS"),
+        ("flip flops", "FLIP FLOPS"),
         ("crocs", "CROCS"),
         # Fashion Accessories
         ("watches", "WATCHES"),
@@ -63,9 +62,7 @@ class Product(models.Model):
         ("skincare", "SKINCARE"),
         ("haircare", "HAIRCARE"),
         # Perfumes
-        ("perfumes-men", "PERFUMES (MEN)"),
-        ("perfumes-women", "PERFUMES (WOMEN)"),
-        ("unisex-perfumes", "UNISEX PERFUMES"),
+        ("perfumes", "PERFUMES"),
     )
 
     GENDER = (

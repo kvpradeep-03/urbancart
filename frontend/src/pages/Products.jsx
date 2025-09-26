@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { categories } from "../assets/assert";
 import {
   Box,
   FormGroup,
@@ -19,6 +18,7 @@ import { Categories } from "../assets/assert";
 import Slider from "@mui/material/Slider";
 import { Link } from "react-router-dom";
 
+//TODO: FIX CARD SIZE ISSUE ON WHILE DISPLAYING ONE OR TWO PRODUCTS IN THE GRID
 const Products = () => {
   //stores selected categories like shoes shirts
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -39,6 +39,7 @@ const Products = () => {
           : [...prev, value] // add if not selected
     );
   };
+  console.log(selectedCategories);
 
   //price slider
   const MAX = 10000;
@@ -71,20 +72,7 @@ const Products = () => {
     );
   };
 
-  // const [val, setVal] = React.useState(MIN);
-  // const handleToggle = (_, newValue) => {
-  //   setVal(newValue);
-  // };
-
-  // simulate DB filter call
-  // const handleFilter = () => {
-  //   console.log("Selected Categories:", selectedCategories);
-
-  // Example: send to backend
-  // fetch("/api/products?categories=" + selectedCategories.join(","))
-  //   .then(res => res.json())
-  //   .then(data => console.log(data));
-  // };
+  //fetch products from backend
   const [products, setProducts] = useState([]);
   useEffect(() => {
     axios
@@ -92,12 +80,21 @@ const Products = () => {
       .then((result) => setProducts(result.data))
       .catch((error) => console.log(error));
   }, []);
-  console.log(products);
+
+  //fetch filtered products
+  useEffect(() => {
+  
+    const query = selectedCategories.map((cat) => `category=${cat}`).join("&");
+    axios
+      .get(`http://localhost:8000/api/products/?${query}`)
+      .then((result) => setProducts(result.data))
+      .then((error) => console.log(error));
+  }, [selectedCategories]);
+
   return (
     <Stack
       direction={{ xs: "column", sm: "row" }}
       spacing={0}
-      justifyContent="space-between"
       mt={"auto"}
     >
       <Box
@@ -234,7 +231,7 @@ const Products = () => {
       </Box>
 
       <Box>
-        <Box sx={{ flexGrow: 1, p: { xs: 0, sm: 2 }, mb:6,mt:3 }}>
+        <Box sx={{ flexGrow: 1, p: { xs: 0, sm: 2 }, mb: 6, mt: 3 }}>
           <Grid
             container
             spacing={{ xs: 0, sm: 2, lg: 2 }}
@@ -253,10 +250,13 @@ const Products = () => {
                   >
                     <CardMedia
                       component="img"
-                      height="280"
                       image={product.thumbnail}
                       alt={product.name}
-                      sx={{ objectFit: "cover", width: "100%" }}
+                      sx={{
+                        objectFit: "cover",
+                        width: "100%",
+                        // height: { xs: 180, sm: 220, md: 280 }, // Adjust these values
+                      }}
                     />
                     <CardContent>
                       <Typography gutterBottom variant="h6" component="div">
@@ -283,7 +283,10 @@ const Products = () => {
                         {/* Discounted Price */}
                         <Typography
                           variant="h6"
-                          sx={{ fontSize: {xs:"10px",md:"12px", lg: "16px" }, fontWeight: 500 }}
+                          sx={{
+                            fontSize: { xs: "10px", md: "12px", lg: "16px" },
+                            fontWeight: 500,
+                          }}
                         >
                           Rs. {product.discount_price}
                         </Typography>
@@ -294,7 +297,7 @@ const Products = () => {
                           sx={{
                             textDecoration: "line-through",
                             color: "text.secondary",
-                            fontSize: {xs:"10px",md:"12px", lg: "16px"}
+                            fontSize: { xs: "10px", md: "12px", lg: "16px" },
                           }}
                         >
                           Rs. {product.original_price}
@@ -305,7 +308,7 @@ const Products = () => {
                           variant="body2"
                           sx={{
                             color: "error.main",
-                            fontSize: {xs:"10px",md:"12px", lg: "16px"},
+                            fontSize: { xs: "10px", md: "12px", lg: "16px" },
                             fontWeight: "small",
                           }}
                         >

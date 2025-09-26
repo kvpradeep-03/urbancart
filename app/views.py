@@ -8,7 +8,13 @@ from rest_framework.generics import RetrieveAPIView
 
 @api_view(["GET"])
 def products(request):
+    # gets multipe category from query params as a list like, /api/products/?category=t-shirts&category=jeanscategory=shoes&category=clothes to --> categories = ["t-shirts", "jeans"]
+    categories = request.query_params.getlist("category")
+    categories = [c.lower() for c in categories]  # normalize to match DB
     products = Product.objects.all()
+    if categories:
+        # category__in is a special Django ORM filter that checks if the category field of the Product model matches any value in the provided list.
+        products = Product.objects.filter(category__in=categories)
     serializer = ProductSerializers(products, many=True, context={"request": request})
     return Response(serializer.data)
 

@@ -267,7 +267,7 @@ export const Categories = [
   "FLATS",
   "SLIPPERS",
   "SANDALS",
-  "FLIP-FLOPS",
+  "FLIP FLOPS",
   "CROCS",
   "WATCHES",
   "BELTS",
@@ -280,7 +280,5 @@ export const Categories = [
   "MAKEUP",
   "SKINCARE",
   "HAIRCARE",
-  "PERFUMES (MEN)",
-  "PERFUMES (WOMEN)",
-  "UNISEX PERFUMES",
+  "PERFUMES",
 ];
