@@ -16,9 +16,10 @@ import Box from '@mui/material/Box';
 import { SvgIcon } from "@mui/material";
 import { TfiPackage } from "react-icons/tfi";
 import { GrMapLocation } from "react-icons/gr";
+import { Link } from 'react-router-dom';
  
 
-export default function CustomizedMenus() {
+export default function CustomizedMenus({setShowLogin}) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -37,7 +38,6 @@ export default function CustomizedMenus() {
         aria-expanded={open ? "true" : undefined}
         variant="text"
         disableElevation
- 
         onClick={(e) => {
           e.stopPropagation(); // ✅ prevents Drawer from closing
           handleClick(e);
@@ -88,9 +88,11 @@ export default function CustomizedMenus() {
             To access account and manage orders
           </Typography>
         </MenuItem>
-
         <MenuItem
-          onClick={handleClose}
+          onClick={() => {
+            handleClose();
+            setShowLogin(true);
+          }}
           disableRipple
           sx={{ display: "flex", alignItems: "center", gap: 1 }}
         >

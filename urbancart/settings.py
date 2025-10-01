@@ -46,8 +46,21 @@ INSTALLED_APPS = [
     "core",
     "app",
     "rest_framework",
+    "rest_framework.authtoken",  # <-- For handling tokens
     "corsheaders",
 ]
+
+# enables token authentication and allows unrestricted access to all endpoints by default.
+# By default, every API view in this project should check for a Token in the request header.
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

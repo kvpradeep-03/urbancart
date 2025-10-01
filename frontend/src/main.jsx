@@ -3,14 +3,16 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
 import "./index.css";
-
 import { CssBaseline } from "@mui/material";
 import { CartProvider } from "./context/CartContext.jsx";
+import {AuthContext} from "./context/AuthContext.jsx"
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <CssBaseline />
-    <CartProvider>
-      <App />
-    </CartProvider>
+    <AuthContext>
+      <CartProvider>
+        <App />
+      </CartProvider>
+    </AuthContext>
   </BrowserRouter>
 );

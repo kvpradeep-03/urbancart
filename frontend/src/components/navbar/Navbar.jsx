@@ -23,12 +23,12 @@ import { Link } from "react-router-dom";
 import { useContext } from "react";
 import { CartContext } from "../../context/CartContext";
 
-const Navbar = () => {
+const Navbar = ({ setShowLogin }) => {
   const { totalItems } = useContext(CartContext);
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  
+
   const navItems = [
-    <CustomizedMenus />,
+    <CustomizedMenus setShowLogin={setShowLogin} />,
     <Link to="/cart" style={{ textDecoration: "none", color: "inherit" }}>
       <Box
         sx={{
@@ -84,7 +84,7 @@ const Navbar = () => {
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
   };
-  
+
   const drawerWidth = 240;
 
   const drawer = (
@@ -154,10 +154,10 @@ const Navbar = () => {
               ml: "auto", // push to right
             }}
           >
-            {/* Search only visible on desktop */}
+            {/* Search only visible on desktop
             <Box sx={{ display: { xs: "none", sm: "block" } }}>
               <Search />
-            </Box>
+            </Box> */}
 
             {/* Nav items (desktop only) */}
             <Box
