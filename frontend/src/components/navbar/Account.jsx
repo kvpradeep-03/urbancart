@@ -10,23 +10,36 @@ import FileCopyIcon from '@mui/icons-material/FileCopy';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import Typography from '@mui/material/Typography';
-import { IoLogInOutline } from "react-icons/io5";
+import { IoLogInOutline, IoLogOutOutline } from "react-icons/io5";
 import { IoPersonOutline } from "react-icons/io5";
 import Box from '@mui/material/Box';
 import { SvgIcon } from "@mui/material";
 import { TfiPackage } from "react-icons/tfi";
 import { GrMapLocation } from "react-icons/gr";
 import { Link } from 'react-router-dom';
- 
+import { useAuth } from "../../context/AuthContext.jsx";
 
 export default function CustomizedMenus({setShowLogin}) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
+
+  // Destructure user and logout function from the AuthContext
+  const { user, logout } = useAuth();
+  const isLoggedIn = !!user;
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  // Function to handle logout action
+  const handleLogout = () => {
+    // Close the menu
+    handleClose();
+    // Call the logout function from AuthContext (which deletes the token locally and attempts to hit the API)
+    logout();
   };
 
   return (
@@ -77,32 +90,58 @@ export default function CustomizedMenus({setShowLogin}) {
           sx={{
             display: "flex",
             flexDirection: "column",
-            alignItems: "flex-start", // left align text
+            alignItems: "flex-start",
             paddingY: 1,
           }}
         >
           <Typography fontWeight={600} sx={{ textTransform: "none" }}>
-            Welcome
+            Welcome {isLoggedIn ? user.username : ""}
           </Typography>
           <Typography color="initial" sx={{ textTransform: "none" }}>
-            To access account and manage orders
+            {isLoggedIn
+              ? "Manage your account and orders"
+              : "To access account and manage orders"}
           </Typography>
         </MenuItem>
-        <MenuItem
-          onClick={() => {
-            handleClose();
-            setShowLogin(true);
-          }}
-          disableRipple
-          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-        >
-          <SvgIcon
-            component={IoLogInOutline}
-            inheritViewBox
-            sx={{ fontSize: { xs: 16, sm: 26 }, display: "block" }}
-          />
-          <Typography sx={{ textTransform: "none" }}>Login/Signup</Typography>
-        </MenuItem>
+
+        {/* Dynamic Login/Logout Button */}
+        {isLoggedIn ? (
+          // LOGOUT VIEW
+          <MenuItem
+            onClick={handleLogout} // Calls the logout function
+            disableRipple
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              color: "#d32f2f",
+            }}
+          >
+            <SvgIcon
+              component={IoLogOutOutline}
+              inheritViewBox
+              sx={{ fontSize: { xs: 16, sm: 26 }, display: "block" }}
+            />
+            <Typography sx={{ textTransform: "none" }}>Logout</Typography>
+          </MenuItem>
+        ) : (
+          // LOGIN/SIGNUP VIEW
+          <MenuItem
+            onClick={() => {
+              handleClose();
+              setShowLogin(true); // Opens the login/signup popup
+            }}
+            disableRipple
+            sx={{ display: "flex", alignItems: "center", gap: 1 }}
+          >
+            <SvgIcon
+              component={IoLogInOutline}
+              inheritViewBox
+              sx={{ fontSize: { xs: 16, sm: 26 }, display: "block" }}
+            />
+            <Typography sx={{ textTransform: "none" }}>Login/Signup</Typography>
+          </MenuItem>
+        )}
 
         <Divider sx={{ my: 0.5 }} />
         <MenuItem

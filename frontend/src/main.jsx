@@ -5,14 +5,14 @@ import App from "./App.jsx";
 import "./index.css";
 import { CssBaseline } from "@mui/material";
 import { CartProvider } from "./context/CartContext.jsx";
-import {AuthContext} from "./context/AuthContext.jsx"
+import { AuthProvider} from "./context/AuthContext.jsx"
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <CssBaseline />
-    <AuthContext>
+    <AuthProvider>
       <CartProvider>
         <App />
       </CartProvider>
-    </AuthContext>
+    </AuthProvider>
   </BrowserRouter>
 );

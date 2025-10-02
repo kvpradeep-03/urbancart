@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./Auth.css";
 import CloseIcon from "@mui/icons-material/Close";
 import {AuthContext} from "../../context/AuthContext"
+import {useAuth} from "../../context/AuthContext"
 
 const Auth = ({ setShowLogin }) => {
   const [currentState, setCurrentState] = useState("Login");

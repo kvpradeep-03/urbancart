@@ -7,7 +7,6 @@ import React, {
   useMemo,
 } from "react";
 
-//TODO: fix the size issue in cart (should be able to add different sizes of same product)
 export const CartContext = createContext(null);
 
 // cartProvider component wraps the app and provides cart values to any nested components in app

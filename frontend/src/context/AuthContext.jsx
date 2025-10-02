@@ -1,8 +1,13 @@
-import React, { useState, createContext} from "react";
+import React, { useState, createContext, useContext } from "react";
 
-const AuthContext = createContext(null);
+// Context definition MUST be exported if consumed by other files
+export const AuthContext = createContext(null);
 
-const AuthProvider = ({ children }) => {
+// Custom Hook MUST be exported
+export const useAuth = () => useContext(AuthContext);
+
+// Provider Component MUST be exported
+export const AuthProvider = ({ children }) => {
   // Try to load token/user data from local storage on load
   const [token, setToken] = useState(localStorage.getItem("authToken"));
   const [user, setUser] = useState(
@@ -24,7 +29,7 @@ const AuthProvider = ({ children }) => {
     setUser(null);
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
-    // NOTE: In Django should use this /api/auth/logout/ endpoint here.
+    // NOTE: In a real app, you would also hit the Django /api/auth/logout/ endpoint here.
   };
 
   return (

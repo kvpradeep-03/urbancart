@@ -20,7 +20,6 @@ import { useToast } from "../context/ToastContext";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
-
 const Cart = () => {
   const theme = useTheme();
   const toast = useToast();
@@ -36,6 +35,13 @@ const Cart = () => {
     totalPrice,
     clearCart,
   } = useContext(CartContext);
+
+  const [orderPlaced, setOrderPlaced] = useState(false);
+
+  const handlePlaceOrder = () => {
+    setOrderPlaced(true);
+     toast.success("Your Order has been Placed Successfully, Thank you!");
+  };
 
   // const [applycoupon, setApplycoupon] = useState(false);
   const [open, setOpen] = useState(false);
@@ -65,7 +71,7 @@ const Cart = () => {
           >
             <CardMedia
               component="img"
-              sx={{ width: {xs:140, md: 130 }, m: 1 }}
+              sx={{ width: { xs: 140, md: 130 }, m: 1 }}
               image={item.thumbnail}
               alt={item.name}
             />
@@ -411,8 +417,14 @@ const Cart = () => {
             </Typography>
           </Box>
         </Box>
-        <Button variant="outlined" color="success">
-          Place Order
+        <Button
+          variant="outlined"
+          color="success"
+          onClick={handlePlaceOrder}
+          //disabled={orderPlaced} // optional: disable after placing order
+        >
+          {orderPlaced ? "Order Placed " : "Place Order"}
+          
         </Button>
       </Card>
     </Stack>
