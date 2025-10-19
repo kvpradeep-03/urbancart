@@ -129,6 +129,8 @@ class ProductImage(models.Model):
     )
     image = models.ImageField(upload_to="products/images/")
 
+# class Cart(models.Model):
+    
 
 class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

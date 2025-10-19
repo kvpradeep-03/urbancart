@@ -4,6 +4,7 @@ from .models import Product
 from .serializers import ProductSerializers
 from rest_framework.response import Response
 from rest_framework.generics import RetrieveAPIView
+from rest_framework.permissions import AllowAny
 
 
 @api_view(["GET"])

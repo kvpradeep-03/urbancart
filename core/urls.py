@@ -3,16 +3,23 @@
 from django.urls import path
 from .views import (
     UserRegistrationAPIView,
-    UserLoginAPIView,
+    EmailLoginAPIView,
     UserDetailAPIView,
     UserLogoutAPIView,
 )  # ... imports the view classes
+from rest_framework_simplejwt.views import (
+    TokenRefreshView,  # Handles POST to /refresh/
+    TokenVerifyView,  # Optional: To check if a token is valid
+)
 
 urlpatterns = [
     # Maps the URL path 'register/' to the view class UserRegistrationAPIView
     path("register/", UserRegistrationAPIView.as_view(), name="api_register"),
-    # Maps the URL path 'login/' to the view class UserLoginAPIView
-    path("login/", UserLoginAPIView.as_view(), name="api_login"),
+    # JWT Login (customized email/ authentication)
+    path("login/", EmailLoginAPIView.as_view(), name="token_obtain_pair"),
+    path("refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    # # Maps the URL path 'login/' to the view class UserLoginAPIView
+    # path("login/", UserLoginAPIView.as_view(), name="api_login"),
     # ... and so on for logout and user detail
     path("user/", UserDetailAPIView.as_view(), name="api_user_detail"),
     path("logout/", UserLogoutAPIView.as_view(), name="api_logout"),

@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # Load .env file
 load_dotenv()
@@ -46,7 +47,8 @@ INSTALLED_APPS = [
     "core",
     "app",
     "rest_framework",
-    "rest_framework.authtoken",  # <-- For handling tokens
+    "rest_framework.authtoken",  # <-- For handling
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
 ]
 
@@ -55,17 +57,28 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ],
 }
 
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # last for 2 hrs
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),  # last for 1 day
+    "ROTATE_REFRESH_TOKENS": True,  # New refresh token is issued on refresh (best practice)
+    "BLACKLIST_AFTER_ROTATION": True,  # Old refresh token is instantly blacklisted
+    "AUTH_HEADER_TYPES": (
+        "Bearer",
+    ),  # Use 'Bearer <token>' in the Authorization header
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+}
+
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -73,13 +86,22 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:5175",
 
+# Allow sending cookies
+CORS_ALLOW_CREDENTIALS = True
+REACT_PORT = "5173"
+
+# Only allow cross-origin requests from these specific domains, and include credentials when they request them.
+CORS_ALLOWED_ORIGINS = [
+    f"http://localhost:{REACT_PORT}",
+    f"http://127.0.0.1:{REACT_PORT}",
 ]
 
+# is a security whitelist that defines which external domains are trusted to make POST, PUT, DELETE, or PATCH requests to your Django backend
+CSRF_TRUSTED_ORIGINS = [
+    f"http://localhost:{REACT_PORT}",
+    f"http://127.0.0.1:{REACT_PORT}",
+]
 ROOT_URLCONF = "urbancart.urls"
 
 TEMPLATES = [
@@ -157,7 +179,6 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # User Model
 AUTH_USER_MODEL = "core.CustomUser"
-
 
 # URL prefix for serving media files
 MEDIA_URL = "/media/"
