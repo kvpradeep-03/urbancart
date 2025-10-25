@@ -68,7 +68,7 @@ class CustomEmailTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = "email"
 
     # Remove the default username field from the serializer's field set
-    # This prevents the 'username: This field is required' error & must redefine fields if you want to alter the required set.
+    # This prevents the 'username: This field is required' error
     def __init__(self, *args, **kwargs):
         # Call the parent's constructor first. This populates self.fields
         # with field instances for 'username', 'password', and 'email'.

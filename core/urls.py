@@ -6,6 +6,7 @@ from .views import (
     EmailLoginAPIView,
     UserDetailAPIView,
     UserLogoutAPIView,
+    DeleteAccountAPIView
 )  # ... imports the view classes
 from rest_framework_simplejwt.views import (
     TokenRefreshView,  # Handles POST to /refresh/
@@ -23,4 +24,5 @@ urlpatterns = [
     # ... and so on for logout and user detail
     path("user/", UserDetailAPIView.as_view(), name="api_user_detail"),
     path("logout/", UserLogoutAPIView.as_view(), name="api_logout"),
+    path("delete-account/", DeleteAccountAPIView.as_view(), name="api_delete_account"),
 ]
