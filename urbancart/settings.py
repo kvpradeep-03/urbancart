@@ -158,6 +158,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Password reset token expiration time 2hrs. And this Timeout is related to django's default_token_generator used in password reset process.
+PASSWORD_RESET_TIMEOUT = 7200
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

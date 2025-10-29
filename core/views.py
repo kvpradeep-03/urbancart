@@ -7,7 +7,12 @@ from django.http import JsonResponse
 from django.shortcuts import (
     get_object_or_404,
 )  # Not strictly needed for auth, but useful utility
-from .serializers import UserRegistrationSerializer, UserSerializer
+from .serializers import (
+    UserRegistrationSerializer,
+    UserSerializer,
+    PasswordResetRequestSerilizer,
+    PasswordResetConfirmSerializer,
+)
 from .models import CustomUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -18,6 +23,9 @@ import brevo_python
 from brevo_python.rest import ApiException
 from pprint import pprint
 
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 # API View for User Registration (Signup)
 
@@ -238,4 +246,91 @@ class DeleteAccountAPIView(APIView):
             status=status.HTTP_204_NO_CONTENT
         )
 
-# class PasswordResetAPIView(APIView):
+class PasswordResetRequestAPIView(APIView):
+    """
+    Takes an email address aand sends a password reset link containing a uid and token to tthae mail.
+    """
+    permission_classes = []
+
+    def post(self, request):
+        serializer = PasswordResetRequestSerilizer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.user
+        else:
+            # If validation fails 'email' is missing or empty, return the 400 Bad Request error.
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if user:
+            # generating uid and token
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            try:
+                template_path = os.path.join(os.path.dirname(__file__), '../email_templates', 'password_reset.html')
+                with open(template_path, 'r', encoding='utf-8') as f:
+                    html_template = f.read()
+
+                replacements = {
+                    "[[USER_NAME]]": user.username,
+                    "[[RESET_LINK]]": f"http://localhost:5173/reset-password/{uid}/{token}/",
+                }
+                for placeholder, value in replacements.items():
+                    if value is not None:
+                        html_template = html_template.replace(placeholder, str(value))
+
+                configuration = brevo_python.Configuration()
+                configuration.api_key["api-key"] = os.getenv("BREVO_API_KEY")
+                api_instance = brevo_python.TransactionalEmailsApi(
+                    brevo_python.ApiClient(configuration)
+                )
+
+                email_content = brevo_python.SendSmtpEmail(
+                    to=[{"email": user.email, "name": user.username}],
+                    sender={"email": "kvpradeep60@gmail.com", "name": "Urbancart"},
+                    subject="Password Reset Request",
+                    html_content=html_template,
+                )
+                email_response = api_instance.send_transac_email(email_content)
+
+            except FileNotFoundError:
+                return Response({f"Error: Email Templates file not found at {template_path}"})
+            except ApiException as e:
+                return Response(
+                    {"error": "Failed to send reset email. Please try again."
+                     f" Error details: {str(e)}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+            except Exception as e:
+                return Response(
+                    "An unexpected error occurred during email sending."
+                    f" Error details: {str(e)}",
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+        # return a non specific message to prevent email enumeration attacks
+        return Response(
+            {
+                "message": "If a matching account was found, a password reset email has been sent.",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+class PasswordResetConfirmAPIView(APIView):
+    """
+    Confirms the password reset using uid and token, and sets the new password. expects: {uid, token, new_password}
+    """
+    permission_classes = []
+
+    def post(self,request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        # The serializer validates uid, token, new_password, and password match
+        serializer.is_valid(raise_exception=True)
+
+        # The save method sets the new password and invalidates old tokens
+        user = serializer.save()
+
+        return Response(
+        {
+            "message": "Password has been successfully reset. Please log in with your new password."
+        },
+        status=status.HTTP_200_OK,
+)

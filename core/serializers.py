@@ -1,8 +1,12 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import CustomUser
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_str, force_bytes
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -104,3 +108,69 @@ class CustomEmailTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["email"] = user.email
 
         return token
+
+class PasswordResetRequestSerilizer(serializers.Serializer):
+    """
+    Serializer for requesting a password reset via email. Were the token is valid for 2hrs as per settings.py PASSWORD_RESET_TIMEOUT setting.
+    """
+    email = serializers.EmailField(required=True)
+
+    def validate_email(self, value):
+        try:
+            #saving the user data (obj) in the current serializer instance for use in view
+            self.user = CustomUser.objects.get(email__iexact=value)
+        except CustomUser.DoesNotExist:
+            # for security, returns non specific success message even if email not found this prevents enumuration attackes
+            self.user = None
+        return value
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    """Serializer for confirming the password reset with uid(encrypted), token(encrypted), and new_password, confirm_new_password."""
+    uid = serializers.CharField(required=True)
+    token = serializers.CharField(required=True)
+    new_password = serializers.CharField(write_only=True, required=True, style={"input_type": "password"})
+    confirm_new_password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+    def validate_new_password(self, value):
+        try:
+            validate_password(value)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(list(e.messages))
+        return value
+
+    # The is_valid first triggers field level validationmethods like validate_<field_names>(Checks a single field for complex requirements like email, password etc..)
+    # Then it triggers the object level validators like it Checks requirements involving multiple fields (e.g., ensuring password matches confirm_password) or business logic that requires the entire validated dataset
+    # Then model level validation Final checks defined on the Django Model itself.
+    def validate(self, data):
+        if data['new_password'] != data['confirm_new_password']:
+            raise serializers.ValidationError({"Error: ": "New password and Confirm new password do not match."})
+
+        try:
+            # Decode the UID and get the user
+            uid = force_str(urlsafe_base64_decode(data['uid']))
+            self.user = CustomUser.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+            raise serializers.ValidationError({"uid": "Invalid user ID or token."})
+
+        # Check the token validity
+        if not default_token_generator.check_token(self.user, data["token"]):
+            raise serializers.ValidationError(
+                {"token": "Invalid or expired reset token."}
+            )
+
+        return data
+
+    def save(self):
+        # The user object is attached to self.user from validate()
+        self.user.set_password(self.validated_data["new_password"])
+        self.user.save()
+
+        # Invalidate all existing tokens/sessions to enforce new login
+        try:
+            # Blacklist all existing RefreshTokens for the user
+            for token in RefreshToken.for_user(self.user).blacklist():
+                pass
+        except Exception:
+            # Handle potential edge cases where no tokens exist
+            pass
+
+        return self.user
