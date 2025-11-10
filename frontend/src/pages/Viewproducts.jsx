@@ -37,10 +37,10 @@ export default function Viewproducts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedSize, setSelectedSize] = useState({});
-  
+
   // for similar products
   const [products, setProducts] = useState([]);
-  
+
   // check if product is already in cart if yes sets true else false , doing this to prevent null error on initial render
   const inCart = product ? cart.some((p) => p.id === product.id) : false;
 
@@ -75,7 +75,7 @@ export default function Viewproducts() {
   // derive sizes from product AFTER product is set
   const sizesArray = product?.size ? product.size.split(" ") : [];
   console.log(selectedSize);
-  
+
   // Custom Arrows for the slider
   const NextArrow = ({ onClick }) => (
     <IconButton
@@ -106,7 +106,7 @@ export default function Viewproducts() {
       <ArrowBackIos />
     </IconButton>
   );
-  
+
   // Slider settings
   const settings = {
     /**
@@ -497,7 +497,7 @@ export default function Viewproducts() {
           </Box>
         </Box>
       </Stack>
-     
+
       <Divider sx={{ mt: { sm: "6vw", xs: "16vw" } }}>
         <Typography
           variant="h4"
@@ -510,7 +510,7 @@ export default function Viewproducts() {
           Similar Products
         </Typography>
       </Divider>
-     
+
       {/* // Similar Products Section */}
       <Box sx={{ flexGrow: 1, p: { xs: 0, sm: 2 }, mt: 3, mb: 6 }}>
         <Grid

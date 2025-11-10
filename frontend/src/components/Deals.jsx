@@ -38,7 +38,7 @@ const settings = {
   ],
 };
 
-console.log(" window.innerWidth Value = " + window.innerWidth);
+// console.log(" window.innerWidth Value = " + window.innerWidth);
 
 const Deals = () => {
   return (

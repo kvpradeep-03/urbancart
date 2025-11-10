@@ -83,3 +83,18 @@
   font-weight: 500;
   cursor: pointer;
 }
+
+.login-popup-forgot-password {
+  text-align: right;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+
+.login-popup-forgot-password a {
+  text-decoration: none;
+  color: gray;
+}
+.login-popup-forgot-password a:hover {
+  text-decoration: underline;
+}
+

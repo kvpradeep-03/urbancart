@@ -14,10 +14,18 @@ from .serializers import (
     PasswordResetConfirmSerializer,
 )
 from .models import CustomUser
+from django.conf import settings
+from .authentication import CookieJWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from .serializers import CustomEmailTokenObtainPairSerializer
 from rest_framework_simplejwt.exceptions import TokenError
+from datetime import timedelta
+from rest_framework.response import Response
+from rest_framework import status
+
 # brevo email service api
 import brevo_python
 from brevo_python.rest import ApiException
@@ -58,12 +66,14 @@ class UserRegistrationAPIView(APIView):
                 # sends a email to the user on successful registration
 
                 # loads email template file
-                template_path = os.path.join(os.path.dirname(__file__), '../email_templates', 'welcome.html')
-                with open(template_path, 'r', encoding='utf-8') as f:
+                template_path = os.path.join(
+                    os.path.dirname(__file__), "../email_templates", "welcome.html"
+                )
+                with open(template_path, "r", encoding="utf-8") as f:
                     html_template = f.read()
                 replacements = {
-                    #[[params]] using double square brackets to avoid conflicts with other templating syntaxes
-                    "[[USER_NAME]]": user.username 
+                    # [[params]] using double square brackets to avoid conflicts with other templating syntaxes
+                    "[[USER_NAME]]": user.username
                 }
 
                 for placeholder, value in replacements.items():
@@ -91,13 +101,19 @@ class UserRegistrationAPIView(APIView):
                 # Extract a simple serializable piece of data, like the message ID, OR a simple success message.
                 email_status_message = f"Welcome email sent successfully. Message ID: {getattr(email_response, 'message_id', 'N/A')}"
             except FileNotFoundError:
-                return Response({f"Error: Email Templates file not found at {template_path}"})
+                return Response(
+                    {f"Error: Email Templates file not found at {template_path}"}
+                )
             except ApiException as e:
-                return Response({
-                     f"error: Error While Sending Email \n {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(
+                    {f"error: Error While Sending Email \n {e}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
             except Exception as e:
-                return Response({
-                     f"error: Error while Account Creation \n {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(
+                    {f"error: Error while Account Creation \n {e}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
 
             # These tokens to be used for the immediate subsequent actions like sending a verification email or logging in the user right after signup.
             # we'll send a verification mail.
@@ -106,8 +122,8 @@ class UserRegistrationAPIView(APIView):
                     "message": "User registered successfully.",
                     "email_response": email_status_message,
                     "user_id": user.id,
-                    "access_token": str(tokens.access_token),
-                    "refresh_token": str(tokens),
+                    # "access_token": str(tokens.access_token),
+                    # "refresh_token": str(tokens),
                 },
                 status=status.HTTP_201_CREATED,
             )
@@ -119,60 +135,150 @@ class UserRegistrationAPIView(APIView):
 class EmailLoginAPIView(TokenObtainPairView):
     """
     Custom login view that uses the CustomEmailTokenObtainPairSerializer
-    to authenticate users via email and password, returning JWT tokens.
+    to authenticate users via email and password, and sets cookie in the header
     """
 
     # Set the custom serializer for this view
     serializer_class = CustomEmailTokenObtainPairSerializer
     # This view will now handle POST requests to generate tokens using 'email' and 'password'.
 
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response(
+                {"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        user = serializer.user
+        refresh = serializer.validated_data["refresh"]
+        access = serializer.validated_data["access"]
+
+        # Prepare response
+        response = Response({"message": "Login successful"}, status=status.HTTP_200_OK)
+
+        # Set cookies (secure & HttpOnly)
+        # Once the cookie is setted in the header of the request
+        # Then in frontend just calls the API with axios.get('/profile/', { withCredentials: true })
+        # The browser automatically sends the access_token cookie along with the request
+        # On the Django side, the authentication class CookieJWTAuthentication reads that cookie, access_token = request.COOKIES.get("access_token")
+
+        response.set_cookie(
+            key="access_token",
+            value=str(access),
+            httponly=True,
+            secure=False,  # use True in production (HTTPS)
+            samesite="Lax",
+            max_age=int(timedelta(minutes=15).total_seconds()),
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=str(refresh),
+            httponly=True,
+            secure=False,
+            samesite="Lax",
+            max_age=int(timedelta(days=1).total_seconds()),
+        )
+
+        # Optionally return limited user info (safe to share)
+        response.data["user"] = {
+            "id": user.id,
+            "email": user.email,
+            "username": user.username,
+        }
+
+        return response
+
+
+class RefreshAPIView(TokenRefreshView):
+    """
+    Custom TokenRefreshView that reads the refresh token from HttpOnly cookies.
+    """
+
+    serializer_class = TokenRefreshSerializer
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get("refresh_token")
+
+        if not refresh_token:
+            return Response(
+                {"detail": "Refresh token not provided in cookies."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        # providing refresh token to jwt TokenRefreshSerializer
+        serializer = self.get_serializer(data={"refresh": refresh_token})
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response(
+                {"detail": "Invalid or expired refresh token."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        access_token = serializer.validated_data.get("access")
+        refresh_token = serializer.validated_data.get("refresh")
+
+        response = Response(
+            {
+                "message": "Refresh succesfull",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+        response.set_cookie(
+            key="access_token",
+            value=str(access_token),
+            httponly=True,
+            secure=False,  # use True in production (HTTPS)
+            samesite="Lax",
+            max_age=int(timedelta(minutes=15).total_seconds()),
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=str(refresh_token),
+            httponly=True,
+            secure=False,
+            samesite="Lax",
+            max_age=int(timedelta(days=1).total_seconds()),
+        )
+
+        return response
+
 
 # API View for User Logout
-class UserLogoutAPIView(APIView):
+class LogoutAPIView(APIView):
     """
     Handles POST requests for user logout.
-    Deletes the current authentication token, invalidating it for future requests.
+    Deletes the cookies(access, refresh tokens) from the req header
     Requires the user to be authenticated (IsAuthenticated).
     """
 
     # protected endpoint (like fetching sensitive user data), we use permission_classes = [IsAuthenticated].
     # This tells DRF: "Only allow access if the request header contains a valid authentication token."
-    permission_classes = [IsAuthenticated]  
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
-        # request.auth automatically contains the Token instance thanks to TokenAuthentication
-        refresh_token = request.data.get("refresh_token")
-        if not refresh_token:
-            return Response(
-                {"message": "Refresh token is required for logout."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        try:
-            token = RefreshToken(refresh_token)
-            token.blacklist()  # Blacklist the refresh token and access token will expire as well within its lifetime
-            response = Response(
-                {"message": "Logout successful. Resfresh token invalidated."},
-                status=status.HTTP_200_OK
-            )
-            # delete header cookie if used
-            return response
-        except TokenError:
-            return Response(
-                {"error": "Invalid or expired refresh"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        except Exception as e: 
-            return Response(
-                {"error": f"An unexpected error occurred: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
+        response = Response({"message": "Logged out"}, status=200)
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+        return response
 
 
 # API View for Retrieving Logged-in User Details
 class UserDetailAPIView(APIView):
     """
     Retrieves the details of the currently authenticated user.
-    Uses JWTAuthentication, which checks the 'Authorization: Bearer <token>' header.
+    requires cookies in the headers
     """
+
+    # authentication_classes defines how the API identifies who the user is.
+    # Extract credentials (token, cookie, session ID, etc.) from the request. Validate them.
+    # If valid returns (user, auth) tuple else sets none
+    # here we mannualy extrated tokens from header (which is setted as cookie) and authenticated them so in frontend we dont need to set any headers like (Bearer auth)
+    authentication_classes = [CookieJWTAuthentication]
 
     # Only logged-in users can access this endpoint
     # permission_classes = [IsAuthenticated] -> the authenticates with auth token in the header of the request which is handled by DRF's TokenAuthentication class automatically.
@@ -185,6 +291,7 @@ class UserDetailAPIView(APIView):
         serializer = UserSerializer(request.user)
         # Returns the JSON representation of the user (without the password)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class DeleteAccountAPIView(APIView):
     """
@@ -201,11 +308,11 @@ class DeleteAccountAPIView(APIView):
             template_path = os.path.join(
                 os.path.dirname(__file__), "../email_templates", "AccountClosure.html"
             )
-            with open(template_path, 'r', encoding='utf-8') as f:
+            with open(template_path, "r", encoding="utf-8") as f:
                 html_template = f.read()
             replacements = {
-                #[[params]] using double square brackets to avoid conflicts with other templating syntaxes
-                "[[USER_NAME]]": user.username 
+                # [[params]] using double square brackets to avoid conflicts with other templating syntaxes
+                "[[USER_NAME]]": user.username
             }
 
             for placeholder, value in replacements.items():
@@ -233,23 +340,31 @@ class DeleteAccountAPIView(APIView):
             # Extract a simple serializable piece of data, like the message ID, OR a simple success message.
             email_status_message = f"Welcome email sent successfully. Message ID: {getattr(email_response, 'message_id', 'N/A')}"
         except FileNotFoundError:
-            return Response({f"Error: Email Templates file not found at {template_path}"})
+            return Response(
+                {f"Error: Email Templates file not found at {template_path}"}
+            )
         except ApiException as e:
-            return Response({
-                f"error: Error While Sending Email \n {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {f"error: Error While Sending Email \n {e}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
         except Exception as e:
-            return Response({
-                f"error: Error while deleting Account \n {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)            
+            return Response(
+                {f"error: Error while deleting Account \n {e}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         return Response(
             {"message": "User account deleted successfully."},
-            status=status.HTTP_204_NO_CONTENT
+            status=status.HTTP_204_NO_CONTENT,
         )
+
 
 class PasswordResetRequestAPIView(APIView):
     """
     Takes an email address aand sends a password reset link containing a uid and token to tthae mail.
     """
+
     permission_classes = []
 
     def post(self, request):
@@ -266,8 +381,12 @@ class PasswordResetRequestAPIView(APIView):
             token = default_token_generator.make_token(user)
 
             try:
-                template_path = os.path.join(os.path.dirname(__file__), '../email_templates', 'password_reset.html')
-                with open(template_path, 'r', encoding='utf-8') as f:
+                template_path = os.path.join(
+                    os.path.dirname(__file__),
+                    "../email_templates",
+                    "password_reset.html",
+                )
+                with open(template_path, "r", encoding="utf-8") as f:
                     html_template = f.read()
 
                 replacements = {
@@ -293,11 +412,15 @@ class PasswordResetRequestAPIView(APIView):
                 email_response = api_instance.send_transac_email(email_content)
 
             except FileNotFoundError:
-                return Response({f"Error: Email Templates file not found at {template_path}"})
+                return Response(
+                    {f"Error: Email Templates file not found at {template_path}"}
+                )
             except ApiException as e:
                 return Response(
-                    {"error": "Failed to send reset email. Please try again."
-                     f" Error details: {str(e)}"},
+                    {
+                        "error": "Failed to send reset email. Please try again."
+                        f" Error details: {str(e)}"
+                    },
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
             except Exception as e:
@@ -314,13 +437,15 @@ class PasswordResetRequestAPIView(APIView):
             status=status.HTTP_200_OK,
         )
 
+
 class PasswordResetConfirmAPIView(APIView):
     """
     Confirms the password reset using uid and token, and sets the new password. expects: {uid, token, new_password}
     """
+
     permission_classes = []
 
-    def post(self,request):
+    def post(self, request):
         serializer = PasswordResetConfirmSerializer(data=request.data)
         # The serializer validates uid, token, new_password, and password match
         serializer.is_valid(raise_exception=True)
@@ -329,8 +454,8 @@ class PasswordResetConfirmAPIView(APIView):
         user = serializer.save()
 
         return Response(
-        {
-            "message": "Password has been successfully reset. Please log in with your new password."
-        },
-        status=status.HTTP_200_OK,
-)
+            {
+                "message": "Password has been successfully reset. Please log in with your new password."
+            },
+            status=status.HTTP_200_OK,
+        )

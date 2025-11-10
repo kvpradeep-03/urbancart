@@ -53,19 +53,19 @@ INSTALLED_APPS = [
 ]
 
 # enables token authentication and allows unrestricted access to all endpoints by default.
-# By default, every API view in this project should check for a Token in the request header.
+# now by default it checks cookies in requests.
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "core.authentication.CookieJWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
+        "rest_framework.permissions.IsAuthenticated",
     ],
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # last for 2 hrs
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # last for 15mins
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),  # last for 1 day
     "ROTATE_REFRESH_TOKENS": True,  # New refresh token is issued on refresh (best practice)
     "BLACKLIST_AFTER_ROTATION": True,  # Old refresh token is instantly blacklisted
@@ -94,13 +94,11 @@ REACT_PORT = "5173"
 # Only allow cross-origin requests from these specific domains, and include credentials when they request them.
 CORS_ALLOWED_ORIGINS = [
     f"http://localhost:{REACT_PORT}",
-    f"http://127.0.0.1:{REACT_PORT}",
 ]
 
 # is a security whitelist that defines which external domains are trusted to make POST, PUT, DELETE, or PATCH requests to your Django backend
 CSRF_TRUSTED_ORIGINS = [
     f"http://localhost:{REACT_PORT}",
-    f"http://127.0.0.1:{REACT_PORT}",
 ]
 ROOT_URLCONF = "urbancart.urls"
 

@@ -9,15 +9,16 @@ import { Button, CircularProgress } from "@mui/material";
 const Auth = ({ setShowLogin }) => {
   const [currentState, setCurrentState] = useState("Login");
   const [responseMessage, setResponseMessage] = useState(null);
-  const { saveAuthData, setLoading, loading, error, setError } = useAuth();
+  const { login, signup, setLoading, loading, error, setError, user } =
+    useAuth();
   // State to hold all form data, including custom fields for signup
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
+    phone: "",
+    agreeTerms: false,
   });
-
-  const BASE_URL = "http://127.0.0.1:8000/api/auth"; // Adjust if your Django server is different
 
   // checkbox in the form validation
   const handleChange = (e) => {
@@ -28,122 +29,60 @@ const Auth = ({ setShowLogin }) => {
     }));
   };
 
-  //login form validation
-  const validateLogin = () => {
-    if (!formData.username || !formData.password) {
-      setError("Please fill in both username and password.");
-      return false;
-    }
-    return true;
-  };
-
-  //signup form validation
-  const validateSignup = () => {
-    if (
-      !formData.username ||
-      !formData.email ||
-      !formData.password ||
-      !formData.agreeTerms
-    ) {
-      setError("Please fill all required fields and agree to the terms.");
-      return false;
-    }
-    // Basic password strength/match checks would go here
-    return true;
-  };
-
   //submit button handeling which hits auth endpoints
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
     setResponseMessage(null);
 
-    let apiUrl = "";
-    let validationPassed = false;
-    let payload = {};
-
     if (currentState === "Login") {
-      validationPassed = validateLogin();
-      apiUrl = `${BASE_URL}/login/`;
-      //here payload is the actual data you are sending to the backend API
-      payload = {
-        username: formData.username,
-        password: formData.password,
-      };
-    } else {
-      // Sign up
-      validationPassed = validateSignup();
-      apiUrl = `${BASE_URL}/register/`;
-
-      // Prepare the payload, ensuring all required fields for CustomUser are sent
-      payload = {
-        username: formData.username,
+      const payload = {
         email: formData.email,
         password: formData.password,
-        city: formData.city,
-        state: formData.state,
-        address: formData.address,
-        phone: formData.phone,
-        is_seller: formData.is_seller,
       };
-    }
+      const response = await login(payload);
+      // console.log("AuthResponse: ", response);
 
-    if (!validationPassed) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await axios.post(apiUrl, payload, {
-        withCredentials: true, //allows cookies to be stored
-      });
-
-      if (response.status === 200 || response.status == 201) {
-        // Successful Login or Signup
-        const { user_id, message } = response.data;
-        console.log(response.data);
-        //Fetch the user's details using the token
-        // Fetch user details using the stored cookie (no token required)
-        // ...existing code...
-        const userDetails = await axios.post(
-          "http://127.0.0.1:8000/api/auth/user/",
-          {}, // <-- empty body
-          { withCredentials: true } // <-- options object
-        );
-        // ...existing code...
-        console.log(userDetails);
-        // Save user details (no need to store token in localStorage)
-        saveAuthData(userDetails.data);
-
-        setResponseMessage(message || "Operation successful!");
+      if (response.success) {
+        setResponseMessage(response.message);
         // Close the popup after successful auth
         setTimeout(() => setShowLogin(false), 1000);
-      }
-    } catch (err) {
-      //When a request fails with a response from the server (like 400, 401, 500), Axios attaches the full HTTP response to err.response.
-      // For example:
-      // err.response = {
-      // data: { error: "Invalid credentials" },  // the JSON returned by your API
-      // status: 401,
-      // ...
-      // }
-      if (err.response) {
-        const data = err.response.data;
-        console.log(data);
-        if (data.error) setError(data.error);
-        else if (data.username || data.email) {
-          const errorMsg = Object.entries(data)
-            .map(([key, value]) => `${key}: ${value}`)
-            .join(" | ");
-          setError(errorMsg);
-        } else setError(data.message || "An unknown API error occurred.");
       } else {
-        setError("Network error. Check your server connection.");
+        // Error is already set by the context login function
+        setResponseMessage(null);
       }
-    } finally {
-      setLoading(false);
+    } else {
+      // Sign up
+      // Prepare the payload, ensuring all required fields for CustomUser are sent
+      const payload = {
+        username: formData.username,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+      };
+
+      const response = await signup(payload);
+      if (response.success) {
+        setResponseMessage(response.message);
+        switchState("Login");
+      } else {
+        // Handle signup API errors (e.g., email already exists)
+        const errorData = response.errors;
+        if (errorData) {
+          const [firstField, firstMessage] = Object.entries(errorData)[0];
+
+          const formattedError = Array.isArray(firstMessage)
+            ? firstMessage[0] // First message only
+            : firstMessage;
+
+          setError(formattedError);
+        } else {
+          setError("An unknown error occurred during registration.");
+        }
+      }
     }
+
+    setLoading(false); // setLoading is handled inside context functions, but this is a safeguard
   };
 
   //switch the login/signup forms
@@ -156,11 +95,7 @@ const Auth = ({ setShowLogin }) => {
       username: "",
       email: "",
       password: "",
-      city: "",
-      state: "",
-      address: "",
       phone: "",
-      is_seller: false,
       agreeTerms: false,
     });
   };
@@ -171,7 +106,9 @@ const Auth = ({ setShowLogin }) => {
           <h2>{currentState}</h2>
           <CloseIcon
             sx={{ cursor: "pointer" }}
-            onClick={() => setShowLogin(false)}
+            onClick={() => {
+              setError(null), setResponseMessage(null), setShowLogin(false);
+            }}
           />
         </div>
 
@@ -181,48 +118,37 @@ const Auth = ({ setShowLogin }) => {
         {responseMessage && <p>{responseMessage}</p>}
 
         <div className="login-popup-inputs">
-          {/* Username/Name is mandatory for both */}
+          {currentState === "Sign up" && (
+            <input
+              type="text"
+              placeholder="Username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
+          )}
+
           <input
-            type="text"
-            placeholder="Username"
-            name="username"
-            value={formData.username}
+            type="email"
+            placeholder="Your email"
+            name="email"
+            value={formData.email}
             onChange={handleChange}
             required
           />
 
           {currentState === "Sign up" && (
             <>
-              {/* Email for Signup */}
-              <input
-                type="email"
-                placeholder="Your email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-
               {/* Additional Custom Fields for Signup */}
               <input
                 type="text"
-                placeholder="City"
-                name="city"
-                value={formData.city}
+                placeholder="Phone"
+                name="phone"
+                value={formData.phone}
                 onChange={handleChange}
+                required
               />
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="is_seller"
-                  name="is_seller"
-                  checked={formData.is_seller}
-                  onChange={handleChange}
-                />
-                <label htmlFor="is_seller" className="text-sm">
-                  I want to register as a seller
-                </label>
-              </div>
             </>
           )}
 
@@ -234,6 +160,14 @@ const Auth = ({ setShowLogin }) => {
             onChange={handleChange}
             required
           />
+
+          {currentState === "Login" && (
+            <>
+              <div className="login-popup-forgot-password">
+                <a href="/forgot-password">Forgot Password?</a>
+              </div>
+            </>
+          )}
         </div>
 
         <Button
@@ -264,17 +198,18 @@ const Auth = ({ setShowLogin }) => {
           )}
         </Button>
 
-        {/* Terms & Conditions only required for Sign up */}
-        <div className="login-popup-condition">
-          <input
-            type="checkbox"
-            name="agreeTerms"
-            checked={formData.agreeTerms}
-            onChange={handleChange}
-            required={currentState === "Sign up"}
-          />
-          <p>By continuing, i agree terms of use & privacy policy.</p>
-        </div>
+        {currentState === "Sign up" && (
+          <div className="login-popup-condition">
+            <input
+              type="checkbox"
+              name="agreeTerms"
+              checked={formData.agreeTerms}
+              onChange={handleChange}
+              required={currentState === "Sign up"}
+            />
+            <p>By continuing, i agree terms of use & privacy policy.</p>
+          </div>
+        )}
 
         {currentState === "Login" ? (
           <p>

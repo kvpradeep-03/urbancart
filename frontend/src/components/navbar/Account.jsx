@@ -18,6 +18,7 @@ import { TfiPackage } from "react-icons/tfi";
 import { GrMapLocation } from "react-icons/gr";
 import { Link } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useToast } from "../../context/ToastContext";
 
 export default function CustomizedMenus({setShowLogin}) {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -26,6 +27,8 @@ export default function CustomizedMenus({setShowLogin}) {
   // Destructure user and logout function from the AuthContext
   const { user, logout } = useAuth();
   const isLoggedIn = !!user;
+
+  const toast = useToast();
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -40,6 +43,7 @@ export default function CustomizedMenus({setShowLogin}) {
     handleClose();
     // Call the logout function from AuthContext (which deletes the token locally and attempts to hit the API)
     logout();
+    toast.default("Logged Out Successfully");
   };
 
   return (

@@ -91,7 +91,9 @@ const Products = () => {
       const price_query = `price=${val}`;
       const discount_query = discount.map((d) => `discount=${d}`).join("&");
       axios
-        .get(`http://localhost:8000/api/products/?${category_query}&${price_query}&${discount_query}`)
+        .get(
+          `http://localhost:8000/api/products/?${category_query}&${price_query}&${discount_query}`
+        )
         .then((result) => setProducts(result.data))
         .then((error) => console.log(error));
     } catch (error) {

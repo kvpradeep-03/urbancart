@@ -20,7 +20,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         # Fields required for signup, including custom fields
-        fields = ("id", "username", "email", "password")
+        fields = ("id", "username", "email", "phone", "password")
         # Ensure ID is read-only
         read_only_fields = ("id",)
 
@@ -44,6 +44,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user = CustomUser.objects.create_user(
             username=validated_data["username"],
             email=validated_data.get("email", ""),  # Use .get for optional fields
+            phone=validated_data["phone"],
             password=validated_data["password"],
         )
         return user
@@ -77,7 +78,7 @@ class UserSerializer(serializers.ModelSerializer):
 # }
 class CustomEmailTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
-    Custom serializer to allow login with email instead of username. by default, SimpleJWT uses username.
+    Custom serializer to allow login with email instead of username. by default, SimpleJWT uses username. Returns JWT Tokens.
     """
 
     email = serializers.CharField(required=True, max_length=255)
@@ -93,7 +94,7 @@ class CustomEmailTokenObtainPairSerializer(TokenObtainPairSerializer):
         # Call the parent's constructor first. This populates self.fields
         # with field instances for 'username', 'password', and 'email'.
         super().__init__(*args, **kwargs)
-        # Remove the 'username' field from the serializer fields
+        # Remove the 'username' field from the serializer fields of the parent class
         if "username" in self.fields:
             del self.fields["username"]
 

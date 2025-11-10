@@ -6,12 +6,15 @@ import "./index.css";
 import { CssBaseline } from "@mui/material";
 import { CartProvider } from "./context/CartContext.jsx";
 import { AuthProvider} from "./context/AuthContext.jsx"
+import { ToastProvider } from "./context/ToastContext";
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <CssBaseline />
     <AuthProvider>
       <CartProvider>
-        <App />
+        <ToastProvider maxSnack={3} autoHideDuration={3000}>
+          <App />
+        </ToastProvider>
       </CartProvider>
     </AuthProvider>
   </BrowserRouter>
