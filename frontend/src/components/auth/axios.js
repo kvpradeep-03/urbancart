@@ -31,14 +31,14 @@ api.interceptors.response.use(
 
     // Skip refresh for these endpoints is these endpoint returns 401 due to unauthorized at initial req
     if (
-      originalRequest.url.includes("/api/auth/login/") ||
-      originalRequest.url.includes("/api/auth/refresh/") ||
-      originalRequest.url.includes("/api/auth/signup/")
+      originalRequest.url.includes("api/auth/login/") ||
+      originalRequest.url.includes("api/auth/refresh/") ||
+      originalRequest.url.includes("api/auth/signup/")
     ) {
       return Promise.reject(error);
     }
 
-    // Only handle refresh endpoints 401
+    // Only handle refresh endpoints 401 error, rejects this refresh's 401 error and makes the user for login
     if (!error.response || error.response.status !== 401) {
       return Promise.reject(error);
     }
