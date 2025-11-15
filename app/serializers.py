@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, ProductImage
+from .models import Product, ProductImage, CartItem, Cart, OrderItem, Order
 
 
 # serializers to convert your model data into JSON (and vice versa)
@@ -54,3 +54,38 @@ class ProductSerializers(serializers.ModelSerializer):
         if obj.original_price and obj.discount_price:
             return obj.original_price - obj.discount_price
         return None
+
+
+class CartItemSerializer(serializers.ModelSerializer):
+    # When serializing an CartItem, also serialize the related Product using ProductSerializers To show full product details and it done by DRF
+    product = ProductSerializers(read_only=True)
+    # DRF, When serializing this field, call a method named get_total_price(self, obj).
+    total_price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CartItem
+        fields = ["id", "product", "quantity", "total_price"]
+    # This calls a method inside the CartItem model.
+    def get_total_price(self, obj):
+        return obj.get_total_price()
+
+class CartSerializer(serializers.ModelSerializer):
+    # here DRF uses the passsed cart obj and maps its id and items to serialize a particular user's cart
+    items = CartItemSerializer(many=True, read_only=True)
+    class Meta:
+        model = Cart
+        fields = ["id", "items"]
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializers(read_only=True)
+    class Meta:
+        model = OrderItem
+        fields = ["id", "product", "quantity", "price"]
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
+    class Meta:
+        model = Order
+        fields = ["id", "order_id", "order_date", "status", "total_amount", "items"]

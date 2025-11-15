@@ -301,7 +301,7 @@ class DeleteAccountAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def delete(self, request):
         user = request.user
         try:
             user.delete()

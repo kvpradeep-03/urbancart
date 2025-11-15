@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, ProductImage, Order, OrderItem, Review
+from .models import Product, ProductImage, Order, OrderItem
 
 
 # Inline for multiple images
@@ -42,4 +42,4 @@ class ProductImageAdmin(admin.ModelAdmin):
 
 admin.site.register(Order)
 admin.site.register(OrderItem)
-admin.site.register(Review)
+

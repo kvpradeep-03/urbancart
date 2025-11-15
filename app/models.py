@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
+import uuid
 
 
 # Create your models here.
@@ -129,11 +130,26 @@ class ProductImage(models.Model):
     )
     image = models.ImageField(upload_to="products/images/")
 
-# class Cart(models.Model):
-    
+class Cart(models.Model):
+    # OneToOneField is like a foreignkey, it creates a 1 to 1 relationship between the Cart model and the User, in our code the user model is setted in setttings.AUTH_USER_MODEL
+    # related_name="cart" this gives a reverse reference name from user -> cart
+    # Cart.user  → points to User and User.cart  → points to Cart
+    # example cart = get_object_or_404(Cart, user=user) now when we called Cart.items.all() it maps the cartItem model and its field thats the reverse_name's utility its literally like a pointer
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="cart")
+    created_at = models.DateTimeField(auto_now_add=True)   
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def get_total_price(self):
+        return self.quantity * self.product.discount_price
 
 class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    order_id = models.CharField(max_length=20, blank=True,unique=True, null=True)
+
     order_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(
         max_length=20,
@@ -141,28 +157,25 @@ class Order(models.Model):
             ("pending", "Pending"),
             ("shipped", "Shipped"),
             ("delivered", "Delivered"),
+            ("cancelled", "Cancelled"),
         ],
         default="pending",
     )
+    total_amount = models.IntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        # generates unique order_id beacuse we the order_id is circulated in urls
+        # so if possible anyone can itertate over the orders like api/orders/13... 33.. to prevent this we using UUID
+        # UUID (Universally Unique Identifier) is a 128-bit value used to uniquely identify an object or entity on the internet.
+        if not self.order_id:
+            random_code = uuid.uuid4().hex[:6].upper()
+            self.order_id = f"UC-{random_code}"
+
+        super().save(*args, **kwargs)
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
-
-
-class Review(models.Model):
-    product = models.ForeignKey(
-        Product, on_delete=models.CASCADE, related_name="reviews"
-    )
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
-    )  # who gave the review
-    rating = models.PositiveIntegerField(default=1)  # e.g., 1 to 5 stars
-    review = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.product.name} - {self.rating} Stars"

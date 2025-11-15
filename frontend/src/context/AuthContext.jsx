@@ -129,7 +129,7 @@ export const AuthProvider = ({ children }) => {
   const deleteAccount = async () => {
     if (!user) return false;
     try {
-      await api.post(
+      await api.delete(
         "api/auth/delete-account/",
         {},
         {
