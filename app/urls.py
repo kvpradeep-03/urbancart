@@ -9,6 +9,12 @@ from .views import (
     RemoveCartItem,
     PlaceOrder,
     UserOrders,
+    OrderDetailsList,
+    UpdateOrderStatus,
+    CreateProduct,
+    DeleteProduct,
+    AdminDashboardStats,
+    EditProduct,
 )
 
 
@@ -25,4 +31,10 @@ urlpatterns = [
     path("api/cart/remove/<int:item_id>/", RemoveCartItem.as_view()),
     path("api/orders/", UserOrders.as_view(), name="user-orders"),
     path("api/order/place/", PlaceOrder.as_view()),
+    path("api/admin/orderDetailsList/", OrderDetailsList.as_view()),
+    path("api/admin/updateOrderStatus/", UpdateOrderStatus.as_view()),
+    path("api/admin/createProduct/", CreateProduct.as_view()),
+    path("api/admin/deleteProduct/<int:product_id>/", DeleteProduct.as_view()),
+    path("api/admin/adminDashboardStats/", AdminDashboardStats.as_view()),
+    path("api/admin/editProduct/<int:product_id>/", EditProduct.as_view()),
 ]

@@ -147,7 +147,7 @@ class CartItem(models.Model):
         return self.quantity * self.product.discount_price
 
 class Order(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="order")
     order_id = models.CharField(max_length=20, blank=True,unique=True, null=True)
 
     order_date = models.DateTimeField(auto_now_add=True)

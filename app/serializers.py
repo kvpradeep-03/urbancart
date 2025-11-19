@@ -89,3 +89,19 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ["id", "order_id", "order_date", "status", "total_amount", "items"]
+
+class CreateProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = [
+            "name",
+            "description",
+            "category",
+            "size",
+            "gender",
+            "thumbnail",
+            "original_price",
+            "discount_percentage",
+            #images are get stored by views.py
+            #id,slug, discount_price are auto generated fields so we dont need to pass them
+        ]

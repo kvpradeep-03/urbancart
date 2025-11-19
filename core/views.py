@@ -14,6 +14,8 @@ from .serializers import (
     PasswordResetConfirmSerializer,
 )
 from .models import CustomUser
+from app.serializers import CartSerializer, OrderSerializer
+from app.models import Cart, Order
 from django.conf import settings
 from .authentication import CookieJWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -285,12 +287,21 @@ class UserDetailAPIView(APIView):
     # and were the token was created during signup.
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def get(self, request):
         # request.user is automatically populated with the CustomUser instance
         # if a valid token was provided.
         serializer = UserSerializer(request.user)
+
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+        cartDetails = CartSerializer(cart)
+
+        orders = Order.objects.filter(user=request.user).order_by("-order_date")
+        orderDetails = OrderSerializer(orders, many=True)
         # Returns the JSON representation of the user (without the password)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            {"user": serializer.data, "cart": cartDetails.data, "orders": orderDetails.data},
+            status=status.HTTP_200_OK,
+        )
 
 
 class DeleteAccountAPIView(APIView):
