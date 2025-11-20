@@ -98,6 +98,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
             "description",
             "category",
             "size",
+            "ratings",
             "gender",
             "thumbnail",
             "original_price",

@@ -44,8 +44,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "app.apps.ShopAppConfig",
     "core",
-    "app",
     "rest_framework",
     "rest_framework.authtoken",  # <-- For handling
     "rest_framework_simplejwt.token_blacklist",
