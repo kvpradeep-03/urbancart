@@ -10,6 +10,7 @@ from .views import (
     DeleteAccountAPIView,
     PasswordResetRequestAPIView,
     PasswordResetConfirmAPIView,
+    EditUserProfile,
 )
 
 urlpatterns = [
@@ -32,4 +33,5 @@ urlpatterns = [
         name="password_reset_confirm",
     ),
     path("delete-account/", DeleteAccountAPIView.as_view(), name="api_delete_account"),
+    path("editUserProfile/", EditUserProfile.as_view()),
 ]

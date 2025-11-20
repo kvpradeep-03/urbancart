@@ -16,7 +16,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True, required=True, style={"input_type": "password"}
     )
-
     class Meta:
         model = CustomUser
         # Fields required for signup, including custom fields
@@ -36,6 +35,17 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             validate_password(value)
         except DjangoValidationError as e:
             raise serializers.ValidationError(list(e.messages))
+        return value
+
+    def validate_phone(self, value):
+        """Ensure phone number is exactly 10 digits"""
+
+        if not value.isdigit():
+            raise serializers.ValidationError("Phone number must contain only digits.")
+
+        if len(value) != 10:
+            raise serializers.ValidationError("Phone number must be exactly 10 digits.")
+
         return value
 
     # Custom method to handle user creation with password hashing

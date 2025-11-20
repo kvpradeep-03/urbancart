@@ -13,6 +13,10 @@ from .serializers import (
     PasswordResetRequestSerilizer,
     PasswordResetConfirmSerializer,
 )
+from django.core.validators import validate_email
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.exceptions import ValidationError
+
 from .models import CustomUser
 from app.serializers import CartSerializer, OrderSerializer
 from app.models import Cart, Order
@@ -302,6 +306,64 @@ class UserDetailAPIView(APIView):
             {"user": serializer.data, "cart": cartDetails.data, "orders": orderDetails.data},
             status=status.HTTP_200_OK,
         )
+
+
+class EditUserProfile(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        user = request.user
+        editable_fields = [
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "city",
+            "state",
+            "address",
+            "phone",
+        ]
+
+        new_email = request.data.get("email")
+        if new_email:
+            try:
+                validate_email(new_email)
+            except ValidationError:
+                return Response({"error": "Invalid email format"}, status=400)
+
+            # Check uniqueness (except current user)
+            if CustomUser.objects.filter(email=new_email).exclude(id=user.id).exists():
+                return Response({"error": "Email already in use"}, status=400)
+
+            user.email = new_email
+
+        username_validator = UnicodeUsernameValidator()
+        new_username = request.data.get("username")
+        if new_username:
+            try:
+                username_validator(new_username)
+            except ValidationError:
+                return Response({"error": "Invalid username format"}, status=400)
+
+            # check uniqueness (excluding current user)
+            if (CustomUser.objects.filter(username=new_username).exclude(id=user.id).exists()):
+                return Response({"error": "Username already in use"}, status=400)
+
+            user.username = new_username
+
+        phone = request.data.get("phone")
+        if phone:
+            if not phone.isdigit() or len(phone) not in [10]:
+                return Response({"error": "Invalid phone number"}, status=400)
+            user.phone = phone
+
+        for field in editable_fields:
+            if field in request.data and request.data[field] not in ["", None]:
+                setattr(user, field, request.data[field])
+
+        user.save()
+        return Response({"message": "Profile updated successfully"}, status=200)
 
 
 class DeleteAccountAPIView(APIView):
