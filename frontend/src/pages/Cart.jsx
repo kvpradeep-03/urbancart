@@ -24,31 +24,23 @@ const Cart = () => {
   const theme = useTheme();
   const toast = useToast();
   const navigate = useNavigate();
-  const {
-    cart,
-    removeFromCart,
-    incQty,
-    decQty,
-    totalItems,
-    totalMrpPrice,
-    totalDiscountPrice,
-    totalPrice,
-    clearCart,
-  } = useContext(CartContext);
+  const { cart, removeFromCart, incQty, decQty, clearCart, placeOrder } =
+    useContext(CartContext);
 
   const [orderPlaced, setOrderPlaced] = useState(false);
 
   const handlePlaceOrder = () => {
+    placeOrder();
     setOrderPlaced(true);
-     toast.success("Your Order has been Placed Successfully, Thank you!");
   };
 
   // const [applycoupon, setApplycoupon] = useState(false);
   const [open, setOpen] = useState(false);
+  // console.log("cart items:", cart);
+  if (!cart || cart.length === 0) {
+    return <p>Your cart is empty</p>;
+  }
 
-  if (!cart.length) return <p>Your cart is empty</p>;
-  console.log("Cart Items:", cart);
-  console.log(totalPrice);
   return (
     <Stack
       direction={{ xs: "column", md: "row" }} // column on mobile, row on desktop
@@ -58,9 +50,9 @@ const Cart = () => {
       px={{ xs: 0, md: 35 }}
     >
       <Box width={"100%"}>
-        {cart.map((item) => (
+        {cart.items.map((item) => (
           <Card
-            key={`${item.slug}-${Math.random(1, 100)}`}
+            key={item.id}
             sx={{
               display: "flex",
               m: 1,
@@ -72,27 +64,27 @@ const Cart = () => {
             <CardMedia
               component="img"
               sx={{ width: { xs: 140, md: 130 }, m: 1 }}
-              image={item.thumbnail}
-              alt={item.name}
+              image={item.product.thumbnail}
+              alt={item.product.name}
             />
             <Box sx={{ display: "flex", flexDirection: "column" }}>
               <CardContent sx={{ flex: "1 0 auto" }}>
                 <Typography component="div" variant="h5">
-                  {item.name}
+                  {item.product.name}
                 </Typography>
                 <Typography
                   variant="subtitle1"
                   component="div"
                   sx={{ color: "text.secondary" }}
                 >
-                  {item.description}
+                  {item.product.description}
                 </Typography>
                 <Typography
                   variant="subtitle1"
                   component="div"
                   sx={{ color: "text.secondary" }}
                 >
-                  size: {item.options.selected_size} qty: {item.qty}
+                  size: {item.selected_size.toUpperCase()} qty: {item.quantity}
                 </Typography>
 
                 <Box
@@ -111,7 +103,7 @@ const Cart = () => {
                       fontWeight: 500,
                     }}
                   >
-                    Rs. {item.discount_price}
+                    Rs. {item.product.discount_price}
                   </Typography>
 
                   {/* Original Price with strikethrough */}
@@ -123,7 +115,7 @@ const Cart = () => {
                       fontSize: { xs: "10px", md: "12px", lg: "16px" },
                     }}
                   >
-                    Rs. {item.original_price}
+                    Rs. {item.product.original_price}
                   </Typography>
 
                   {/* Discount info */}
@@ -135,7 +127,7 @@ const Cart = () => {
                       fontWeight: "small",
                     }}
                   >
-                    ({item.discount_percentage}% OFF)
+                    ({item.product.discount_percentage}% OFF)
                   </Typography>
                 </Box>
               </CardContent>
@@ -156,6 +148,7 @@ const Cart = () => {
               >
                 <SvgIcon
                   component={RemoveCircleOutlineIcon}
+                  disabled={item.quantity <= 1}
                   inheritViewBox
                   sx={{
                     fontSize: 24,
@@ -163,16 +156,11 @@ const Cart = () => {
                     color: "action.active",
                     "&:hover": { color: "error.main" },
                   }}
-                  onClick={() => {
-                    if (item.qty > 1)
-                      decQty(item.id, {
-                        selected_size: item.options.selected_size,
-                      });
-                  }}
+                  onClick={() => decQty(item.id, item.quantity)}
                 />
 
                 <Typography variant="body1" sx={{ mx: 1 }}>
-                  {item.qty}
+                  {item.quantity}
                 </Typography>
 
                 <SvgIcon
@@ -184,11 +172,7 @@ const Cart = () => {
                     color: "action.active",
                     "&:hover": { color: "success.main" },
                   }}
-                  onClick={() => {
-                    incQty(item.id, {
-                      selected_size: item.options.selected_size,
-                    });
-                  }}
+                  onClick={() => incQty(item.id, item.quantity)}
                 />
               </Box>
 
@@ -198,9 +182,7 @@ const Cart = () => {
                   color="error"
                   onClick={(e) => {
                     e.stopPropagation();
-                    removeFromCart(item.id, {
-                      selected_size: item.options.selected_size,
-                    }),
+                    removeFromCart(item.id),
                       toast.error("Product removed from cart");
                   }}
                 >
@@ -311,7 +293,7 @@ const Cart = () => {
               mb: 1,
             }}
           >
-            PICE DETAILS ( {totalItems} items)
+            PICE DETAILS ( {cart.total_items} items)
           </Typography>
           <Box
             sx={{
@@ -329,7 +311,7 @@ const Cart = () => {
             >
               Total MRP
             </Typography>
-            <Typography>₹{totalMrpPrice}</Typography>
+            <Typography>₹{cart.total_mrp}</Typography>
           </Box>
           <Box
             sx={{
@@ -347,7 +329,7 @@ const Cart = () => {
             >
               Discount on MRP
             </Typography>
-            <Typography color="success">- ₹{totalDiscountPrice}</Typography>
+            <Typography color="success">- ₹{cart.total_discount}</Typography>
           </Box>
 
           <Box
@@ -413,7 +395,7 @@ const Cart = () => {
                 mt: 2,
               }}
             >
-              ₹{totalPrice + 45}
+              ₹{cart.total_price + 45}
             </Typography>
           </Box>
         </Box>
@@ -421,10 +403,9 @@ const Cart = () => {
           variant="outlined"
           color="success"
           onClick={handlePlaceOrder}
-          //disabled={orderPlaced} // optional: disable after placing order
+          disabled={orderPlaced} // optional: disable after placing order
         >
           {orderPlaced ? "Order Placed " : "Place Order"}
-          
         </Button>
       </Card>
     </Stack>

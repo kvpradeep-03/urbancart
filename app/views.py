@@ -5,7 +5,7 @@ import pytz
 from rest_framework import status
 from django.shortcuts import render
 from rest_framework.views import APIView
-from .models import Product,ProductImage, Cart, CartItem, Order, OrderItem
+from .models import Product, ProductImage, Cart, CartItem, Order, OrderItem, ProductSize
 from .serializers import ProductSerializers, CartSerializer, OrderSerializer,CreateProductSerializer
 from rest_framework.response import Response
 from rest_framework.generics import RetrieveAPIView
@@ -82,19 +82,30 @@ class AddToCart(APIView):
     def post(self, request):
         Product_id = request.data.get("product_id")
         quantity = int(request.data.get("quantity", 1))
+        selected_size = request.data.get("selected_size")
+
+        if not selected_size:
+            return Response({"error": "Size is required"}, status=400)
 
         product = get_object_or_404(Product, id=Product_id)
         # getting users cart if not creating
         # get_or_create returns two values one is the object and another one is a boolen if a new obj is created or not.
         # In Python, _ is used as a throwaway variable. In our case we only need a cart obj we dont need the created boolen so we use throwaway variable
+
+        # Validate ProductSize belongs to the product
+        selected_size_obj = get_object_or_404(
+            ProductSize, size_id=selected_size, product=product
+        )
         cart, _ = Cart.objects.get_or_create(user=request.user)
 
         # if same product exist in cart the qty eill be incremeted else inserted as a new product.
-        cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart, product=product, selected_size=selected_size_obj, quantity=quantity
+        )
 
         if not created:
             cart_item.quantity +=1
-        
+
         cart_item.save()
 
         return Response({"message": "Added to cart"}, status=200)
@@ -109,8 +120,8 @@ class ViewCart(APIView):
         # DRF automatically reads fields from this object (id, items) using serializer.instance.
         # Even though we don't manually use `cart` inside the serializer, DRF uses it internally
         # to load cart.id and cart.items and serialize them into JSON.
-        
-        serializer = CartSerializer(cart)
+
+        serializer = CartSerializer(cart, context={"request": request})
         return Response(serializer.data)
 
 class UpdateCartQuantity(APIView):
@@ -136,6 +147,16 @@ class RemoveCartItem(APIView):
         cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
         cart_item.delete()
         return Response({"message": "Product removed"})
+
+
+class ClearCart(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        cart = get_object_or_404(Cart, user=request.user)
+        cart.items.all().delete()  # deletes every cart item for that user
+        return Response({"message": "Cart cleared"}, status=200)
 
 
 class PlaceOrder(APIView):
@@ -468,4 +489,3 @@ class EditProduct(APIView):
         
         except Exception as e:
             return Response({"error": str(e)}, status=500)
-

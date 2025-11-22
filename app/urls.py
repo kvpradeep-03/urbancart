@@ -15,6 +15,7 @@ from .views import (
     DeleteProduct,
     AdminDashboardStats,
     EditProduct,
+    ClearCart,
 )
 
 
@@ -29,6 +30,7 @@ urlpatterns = [
     path("api/cart/", ViewCart.as_view()),
     path("api/cart/update/<int:item_id>/", UpdateCartQuantity.as_view()),
     path("api/cart/remove/<int:item_id>/", RemoveCartItem.as_view()),
+    path("api/cart/clear/", ClearCart.as_view(), name="clear-cart"),
     path("api/orders/", UserOrders.as_view(), name="user-orders"),
     path("api/order/place/", PlaceOrder.as_view()),
     path("api/admin/orderDetailsList/", OrderDetailsList.as_view()),

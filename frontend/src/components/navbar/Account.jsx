@@ -99,7 +99,7 @@ export default function CustomizedMenus({setShowLogin}) {
           }}
         >
           <Typography fontWeight={600} sx={{ textTransform: "none" }}>
-            Welcome {isLoggedIn ? user.username : ""}
+            Welcome {isLoggedIn ? user.user.username : ""}
           </Typography>
           <Typography color="initial" sx={{ textTransform: "none" }}>
             {isLoggedIn

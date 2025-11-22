@@ -6,124 +6,96 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-
+import api from "../components/auth/axios";
 export const CartContext = createContext(null);
-
+import { useToast } from "./ToastContext";
 // cartProvider component wraps the app and provides cart values to any nested components in app
 // the children is a react prop that represents whatever you wrap inside <CartProvider> in your app
 export const CartProvider = ({ children }) => {
-  // initialize from localStorage safely
-  const [cart, setCart] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("cart")) || [];
-    } catch {
-      return [];
-    }
-  });
-
-  // Every time cart changes this effect runs and writes the new cart into localStorage.
+  const [cart, setCart] = useState([]);
+  const toast = useToast();
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
-
-  // add product: if exists -> increment qty, else push with qty 1
-  // useCallback is like useMemo, but instead of caching a value, it caches a function.
-  // React sees functions as new objects every render. Without useCallback, a function you define inside a component is recreated every time the component re-renders.
-  const addToCart = useCallback((product, options = {}, qty = 1) => {
-    //options can hold anything: size, color, customizations, etc.
-    //...options spreads those into the product object before adding it to the cart.
-    setCart((prev) => {
-      const existing = prev.find(
-        (p) =>
-          p.id === product.id &&
-          JSON.stringify(p.options) === JSON.stringify(options) // compare options too
-      );
-
-      if (existing) {
-        // inc qty if same product + same options
-        return prev.map((p) =>
-          p.id === product.id &&
-          JSON.stringify(p.options) === JSON.stringify(options)
-            ? { ...p, qty: p.qty + 1 }
-            : p
-        );
-      }
-      //we are storing options(size,color, etc..) inside the each product object in cart
-      return [...prev, { ...product, options, qty }];
-    });
+    fetchCart();
   }, []);
 
-  // Increase quantity for an item (ensures qty is at least 1)
-  const incQty = useCallback((id, options = {}) => {
-    setCart((prev) => {
-      // Find the existing item with the same product ID and identical options
-      const existing = prev.find(
-        (p) =>
-          p.id === id && JSON.stringify(p.options) === JSON.stringify(options)
+  const fetchCart = async () => {
+    try {
+      const result = await api.get("/api/cart/", { withCredentials: true });
+      setCart(result.data);
+    } catch (err) {
+      toast.error("Something went wrong while fetching cart");
+    }
+  };
+  const addToCart = async (productId, size) => {
+    try {
+      await api.post(
+        "/api/cart/add/",
+        {
+          product_id: productId,
+          selected_size: size.id, // IMPORTANT
+        },
+        { withCredentials: true }
       );
-      // If the item exists, create a new array with the quantity incremented
-      if (existing) {
-        return prev.map((p) =>
-          p.id === id && JSON.stringify(p.options) === JSON.stringify(options)
-            ? { ...p, qty: p.qty + 1 }
-            : p
-        );
-      }
-      // If the item doesn't exist, return the previous state unchanged
-      return prev;
-    });
-  }, []);
+      fetchCart(); // Refresh cart UI
+    } catch (err) {
+      toast.error("something went wrong, please try again");
+    }
+  };
 
-  const decQty = useCallback((id, options = {}) => {
-    setCart((prev) => {
-      const existing = prev.find(
-        (p) =>
-          p.id === id && JSON.stringify(p.options) === JSON.stringify(options)
-      );
-      if (existing) {
-        return prev.map((p) =>
-          p.id === id && JSON.stringify(p.options) === JSON.stringify(options)
-            ? { ...p, qty: p.qty - 1 }
-            : p
-        );
-      }
-      return prev;
-    });
-  }, []);
-
-  const removeFromCart = useCallback((id, options = {}) => {
-    setCart((prev) =>
-      prev.filter(
-        (p) =>
-          p.id !== id || JSON.stringify(p.options) !== JSON.stringify(options)
-      )
+  const incQty = async (itemId, currentQty) => {
+    await api.post(
+      `/api/cart/update/${itemId}/`,
+      {
+        quantity: currentQty + 1,
+      },
+      { withCredentials: true }
     );
-  }, []);
+    fetchCart();
+    toast.success("Product quantity updated");
+  };
 
-  // clear cart
-  const clearCart = useCallback(() => setCart([]), []);
+  const decQty = async (itemId, currentQty) => {
+    if (currentQty <= 1) return;
+    await api.post(
+      `/api/cart/update/${itemId}/`,
+      {
+        quantity: currentQty - 1,
+      },
+      { withCredentials: true }
+    );
+    fetchCart();
+    toast.success("Product quantity updated");
+  };
 
-  // derived values
-  // usememo to avoid recalculating on every render unless cart changes
-  const totalItems = useMemo(
-    () => cart.reduce((sum, p) => sum + p.qty, 0),
-    [cart]
-  );
+  const removeFromCart = async (itemId) => {
+    await api.delete(`/api/cart/remove/${itemId}/`, {
+      withCredentials: true,
+    });
+    fetchCart();
+  };
 
-  const totalMrpPrice = useMemo(
-    () => cart?.reduce((s, p) => s + (p.original_price || 0) * p.qty, 0),
-    [cart]
-  );
+const clearCart = async () => {
+  try {
+    await api.delete("/api/cart/clear/", { withCredentials: true });
+    setCart([]); // clear local state after backend is cleared
+    toast.success("Cart cleared successfully");
+  } catch (err) {
+    toast.error("Error clearing cart");
+  }
+};
 
-  const totalDiscountPrice = useMemo(
-    () => cart?.reduce((s, p) => s + (p.discount_amount || 0) * p.qty, 0),
-    [cart]
-  );
+const placeOrder = async () => {
+  try {
+    await api.post("/api/order/place/", {
+      withCredentials: true,
+    });
+    setCart([]); // clear local state after backend is cleared
+    toast.success("Your Order has been Placed Successfully, Thank you!");
+  } catch (err) {
+    toast.error("Error while placing order, please try again");
+  }
+};
 
-  const totalPrice = useMemo(
-    () => cart?.reduce((s, p) => s + (p.discount_price || 0) * p.qty, 0),
-    [cart]
-  );
 
   // memoize the context value so consumers don't re-render unnecessarily
 
@@ -140,23 +112,9 @@ export const CartProvider = ({ children }) => {
       incQty,
       decQty,
       clearCart,
-      totalItems,
-      totalMrpPrice,
-      totalDiscountPrice,
-      totalPrice,
+      placeOrder,
     }),
-    [
-      cart,
-      addToCart,
-      removeFromCart,
-      incQty,
-      decQty,
-      clearCart,
-      totalItems,
-      totalMrpPrice,
-      totalDiscountPrice,
-      totalPrice,
-    ]
+    [cart, addToCart, removeFromCart, incQty, decQty, clearCart, placeOrder]
   );
   // passing the cart state and functions as the context value to app components
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

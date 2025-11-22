@@ -72,13 +72,6 @@ class Product(models.Model):
         ("unisex", "Unisex"),
     )
 
-    SIZE_CHOICES = [
-        ("S M L XL XXL", "S M L XL XXL"),
-        ("26 28 30 32 34 36", "26 28 30 32 34 36"),
-        ("6 7 8 9 10 11 12", "6 7 8 9 10 11 12"),
-        ("OneSize", "One Size"),
-        ("","")
-    ]
 
     name = models.CharField(max_length=100)
     slug = models.SlugField(blank=True, null=True)
@@ -87,7 +80,6 @@ class Product(models.Model):
     )
     description = models.TextField(blank=True, null=True)
     category = models.CharField(max_length=50, choices=CATEGORY)
-    size = models.CharField(max_length=20, choices=SIZE_CHOICES, blank=True, default="")
     gender = models.CharField(max_length=20, choices=GENDER, default="unisex")
     ratings = models.FloatField(default=0.0)
     original_price = models.IntegerField(default=0)
@@ -130,21 +122,48 @@ class ProductImage(models.Model):
     )
     image = models.ImageField(upload_to="products/images/")
 
+
+class Size(models.Model):
+    size = models.CharField(max_length=10)  # seperate model for sizes alone like 6, 7, 8 or S, M, L
+    def __str__(self):
+        return self.size
+
+
+class ProductSize(models.Model):
+    #productsize model that connect both product and size
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="sizes")
+    size = models.ForeignKey(Size, on_delete=models.CASCADE)
+    # stock = models.PositiveIntegerField(default=0)
+
+
 class Cart(models.Model):
     # OneToOneField is like a foreignkey, it creates a 1 to 1 relationship between the Cart model and the User, in our code the user model is setted in setttings.AUTH_USER_MODEL
     # related_name="cart" this gives a reverse reference name from user -> cart
     # Cart.user  → points to User and User.cart  → points to Cart
     # example cart = get_object_or_404(Cart, user=user) now when we called Cart.items.all() it maps the cartItem model and its field thats the reverse_name's utility its literally like a pointer
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="cart")
-    created_at = models.DateTimeField(auto_now_add=True)   
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="cart")  
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    selected_size = models.ForeignKey(
+        ProductSize, on_delete=models.CASCADE, null=True, blank=True
+    )
     quantity = models.PositiveIntegerField(default=1)
+    created_at = models.DateTimeField(
+        auto_now_add=True, null=True, blank=True
+    )
 
     def get_total_price(self):
         return self.quantity * self.product.discount_price
+
+    def get_total_mrp_price(self):
+        return self.quantity * self.product.original_price
+    
+    def get_total_discount_price(self):
+        discount_amount = self.product.original_price - self.product.discount_price
+        return self.quantity * discount_amount
+
 
 class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="order")
@@ -173,9 +192,15 @@ class Order(models.Model):
 
         super().save(*args, **kwargs)
 
+    def __str__(self):
+        return self.order_id
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return self.product.name

@@ -10,12 +10,12 @@ import { ToastProvider } from "./context/ToastContext";
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <CssBaseline />
+     <ToastProvider maxSnack={3} autoHideDuration={3000}>
     <AuthProvider>
       <CartProvider>
-        <ToastProvider maxSnack={3} autoHideDuration={3000}>
-          <App />
-        </ToastProvider>
+       <App />
       </CartProvider>
     </AuthProvider>
+    </ToastProvider>
   </BrowserRouter>
 );

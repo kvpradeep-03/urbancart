@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, ProductImage, Order, OrderItem
+from .models import Product, ProductImage, Order, OrderItem, ProductSize, Size
 
 
 # Inline for multiple images
@@ -10,13 +10,17 @@ class ProductImageInline(admin.TabularInline):  # or use StackedInline
     show_change_link = True
 
 
+class ProductSizeInline(admin.TabularInline):
+    model = ProductSize
+    extra = 1
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
         "category",
-        "size",
         "gender",
         "ratings",
         "original_price",
@@ -25,13 +29,22 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = (
         "name",
         "category",
-        "size",
         "gender",
         "ratings",
         "original_price",
         "discount_price",
     )
-    inlines = [ProductImageInline] #adds multiple image upload in admin
+    inlines = [
+        ProductImageInline,
+        ProductSizeInline,
+    ]  # adds multiple image upload in admin
+
+    def sizes_list(self, obj):
+        return ", ".join([ps.size.size for ps in obj.sizes.all()])
+
+    sizes_list.short_description = "Sizes"
+
+    sizes_list.short_description = "Sizes"
 
 
 @admin.register(ProductImage)
@@ -42,4 +55,4 @@ class ProductImageAdmin(admin.ModelAdmin):
 
 admin.site.register(Order)
 admin.site.register(OrderItem)
-
+admin.site.register(Size)

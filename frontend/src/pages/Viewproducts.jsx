@@ -41,8 +41,10 @@ export default function Viewproducts() {
   // for similar products
   const [products, setProducts] = useState([]);
 
-  // check if product is already in cart if yes sets true else false , doing this to prevent null error on initial render
-  const inCart = product ? cart.some((p) => p.id === product.id) : false;
+  const inCart =
+    Array.isArray(cart) && product
+      ? cart.some((item) => item.product.id === product.id)
+      : false;
 
   // Toast notification
   const toast = useToast();
@@ -242,17 +244,17 @@ export default function Viewproducts() {
             </Box>
 
             <Stack direction="row" spacing={2} mt={2}>
-              {sizesArray.length > 0 ? (
-                sizesArray.map((size, index) => (
+              {product.sizes && product.sizes.length > 0 ? (
+                product.sizes.map((item) => (
                   <Button
                     variant="outlined"
-                    key={index}
+                    key={item.size.id}
                     onClick={() =>
                       setSelectedSize((prev) => ({
                         ...prev,
-                        [product.id]: size,
+                        [product.id]: item.size, // store full Size object
                       }))
-                    } // set clicked one
+                    }
                     sx={{
                       bgcolor: "#fffefe",
                       color: "black",
@@ -264,13 +266,17 @@ export default function Viewproducts() {
                         border: "1px solid",
                         borderColor: "error.main",
                       },
-                      ...(selectedSize[product.id] === size && {
+
+                      // highlight selected size
+                      ...(selectedSize[product.id]?.id === item.size.id && {
                         border: "1px solid",
                         borderColor: "error.main",
                       }),
                     }}
                   >
-                    <Typography sx={{ fontSize: 14 }}>{size}</Typography>
+                    <Typography sx={{ fontSize: 14 }}>
+                      {item.size.size.toUpperCase()}
+                    </Typography>
                   </Button>
                 ))
               ) : (
@@ -289,7 +295,14 @@ export default function Viewproducts() {
                 mt: 4,
               }}
               onClick={() => {
-                addToCart(product, { selected_size: selectedSize[product.id] });
+                const size = selectedSize[product.id];
+                // console.log("selectedSize: ", selectedSize);
+                // console.log("size: ", size)
+                if (!selectedSize[product.id]) {
+                  toast.error("Please select a size before adding to cart.");
+                  return;
+                }
+                addToCart(product.id, size);
                 inCart
                   ? toast.success("Added one more product!")
                   : toast.success("Product added to cart!");

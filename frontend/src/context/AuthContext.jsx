@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
     if (isLoggingOut) return; // skip fetching user when logging out
     const fetchUser = async () => {
       try {
-        const response = await api.post(
+        const response = await api.get(
           "/api/auth/user/",
           {},
           { withCredentials: true }
@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }) => {
 
       // console.log("LOGIN RESPONSE: ", loginResponse);
 
-      const userDetailsResponse = await api.post(
+      const userDetailsResponse = await api.get(
         "api/auth/user/",
         {},
         { withCredentials: true }
