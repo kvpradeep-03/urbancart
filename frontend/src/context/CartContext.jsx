@@ -9,22 +9,31 @@ import React, {
 import api from "../components/auth/axios";
 export const CartContext = createContext(null);
 import { useToast } from "./ToastContext";
+import { useAuth } from "./AuthContext";
+
 // cartProvider component wraps the app and provides cart values to any nested components in app
 // the children is a react prop that represents whatever you wrap inside <CartProvider> in your app
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const toast = useToast();
+  const { user } = useAuth();
   useEffect(() => {
-    fetchCart();
-  }, []);
+    if(user){
+      fetchCart();
+    }
+  }, [user]);
 
   const fetchCart = async () => {
     try {
       const result = await api.get("/api/cart/", { withCredentials: true });
       setCart(result.data);
     } catch (err) {
+      if(err.response?.status === 401){
+        return;
+      }
       toast.error("Something went wrong while fetching cart");
     }
+    
   };
   const addToCart = async (productId, size) => {
     try {

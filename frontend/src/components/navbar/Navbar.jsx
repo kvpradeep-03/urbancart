@@ -24,7 +24,7 @@ import { useContext } from "react";
 import { CartContext } from "../../context/CartContext";
 
 const Navbar = ({ setShowLogin }) => {
-  const { totalItems } = useContext(CartContext);
+  const { cart } = useContext(CartContext);
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   const navItems = [
@@ -39,7 +39,7 @@ const Navbar = ({ setShowLogin }) => {
         }}
       >
         <Badge
-          badgeContent={totalItems}
+          badgeContent={cart?.total_items ?? 0}
           color="error"
           sx={{
             "& .MuiBadge-badge": {
@@ -64,21 +64,6 @@ const Navbar = ({ setShowLogin }) => {
         </Typography>
       </Box>
     </Link>,
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        cursor: "pointer",
-        gap: 1,
-      }}
-    >
-      <SvgIcon
-        component={BsShopWindow}
-        inheritViewBox
-        sx={{ fontSize: { xs: 16, sm: 20 }, display: "block" }}
-      />
-      <Typography sx={{ textTransform: "none" }}>Become a Seller</Typography>
-    </Box>,
   ];
 
   const handleDrawerToggle = () => {
@@ -154,10 +139,10 @@ const Navbar = ({ setShowLogin }) => {
               ml: "auto", // push to right
             }}
           >
-            {/* Search only visible on desktop
+            {/* Search only visible on desktop */}
             <Box sx={{ display: { xs: "none", sm: "block" } }}>
               <Search />
-            </Box> */}
+            </Box>
 
             {/* Nav items (desktop only) */}
             <Box

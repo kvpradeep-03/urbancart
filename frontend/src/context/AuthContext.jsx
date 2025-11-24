@@ -9,13 +9,11 @@ import api from "../components/auth/axios";
 import { jwtDecode } from "jwt-decode";
 import { useToast } from "../context/ToastContext";
 
-// Context definition MUST be exported if consumed by other files
+
 export const AuthContext = createContext(null);
 
-// Custom Hook MUST be exported
 export const useAuth = () => useContext(AuthContext);
 
-// Provider Component MUST be exported
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -35,10 +33,9 @@ export const AuthProvider = ({ children }) => {
         setUser(response.data);
       } catch (err) {
         // if /user/ fails (token expired), axios interceptor will handel the refresh
-        console.error("Failed to fetch user:", err);
+        //console.error("Failed to fetch user:", err);
         //TODO: create login page route
         // else window.location.href = "/login";
-        toast.error("Something went wrong, Please login again.")
       } finally {
         setLoading(false);
       }
