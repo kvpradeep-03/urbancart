@@ -19,6 +19,7 @@ import { BsCart3 } from "react-icons/bs";
 import { Badge, SvgIcon } from "@mui/material";
 import { BsShopWindow } from "react-icons/bs";
 import Search from "./Search";
+import SearchIcon from "@mui/icons-material/Search";
 import { Link } from "react-router-dom";
 import { useContext } from "react";
 import { CartContext } from "../../context/CartContext";
@@ -26,6 +27,7 @@ import { CartContext } from "../../context/CartContext";
 const Navbar = ({ setShowLogin }) => {
   const { cart } = useContext(CartContext);
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [showMobileSearch, setShowMobileSearch] = React.useState(false);
 
   const navItems = [
     <CustomizedMenus setShowLogin={setShowLogin} />,
@@ -113,22 +115,60 @@ const Navbar = ({ setShowLogin }) => {
           >
             <MenuIcon sx={{ fontSize: "1.5rem" }} />
           </IconButton>
-
-          <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
-            <Typography
-              variant="h5"
-              component="div"
+          {!showMobileSearch && (
+            <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
+              <Typography
+                variant="h5"
+                component="div"
+                sx={{
+                  cursor: "pointer",
+                  position: { xs: "absolute", sm: "static" }, // absolute only on mobile
+                  top: { xs: "50%", sm: "auto" }, // vertical center
+                  left: { xs: "50%", sm: "auto" }, // horizontal center
+                  transform: { xs: "translate(-50%, -50%)", sm: "none" }, // perfect centering
+                }}
+              >
+                UrbanCart
+              </Typography>
+            </Link>
+          )}
+          {/* mobile Search Icon */}
+          <IconButton
+            sx={{
+              display: { xs: showMobileSearch ? "none" : "block", sm: "none" },
+              ml: 35,
+              mt: 0.5,
+            }}
+            onClick={() => setShowMobileSearch(true)}
+          >
+            <SearchIcon
               sx={{
-                cursor: "pointer",
-                position: { xs: "absolute", sm: "static" }, // absolute only on mobile
-                top: { xs: "50%", sm: "auto" }, // vertical center
-                left: { xs: "50%", sm: "auto" }, // horizontal center
-                transform: { xs: "translate(-50%, -50%)", sm: "none" }, // perfect centering
+                bgcolor: "#fffefe",
+                color: "#141514",
+                fontSize: 24,
+              }}
+            />
+          </IconButton>
+
+          {/* Mobile Search Bar (expanded) */}
+          {showMobileSearch && (
+            <Box
+              sx={{
+                display: { xs: "flex", sm: "none" },
+                alignItems: "center",
+                width: "100%",
+                gap: 1,
               }}
             >
-              UrbanCart
-            </Typography>
-          </Link>
+              <Search />
+              <Typography
+                sx={{ cursor: "pointer", fontSize: 16, fontWeight: 600 }}
+                onClick={() => setShowMobileSearch(false)}
+              >
+                Cancel
+              </Typography>
+            </Box>
+          )}
 
           {/* Right side container: Search + navItems */}
           <Box
@@ -164,6 +204,7 @@ const Navbar = ({ setShowLogin }) => {
           </Box>
         </Toolbar>
       </AppBar>
+
       <nav>
         <Drawer
           variant="temporary"

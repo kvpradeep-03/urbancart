@@ -76,7 +76,7 @@ export default function Viewproducts() {
 
   // derive sizes from product AFTER product is set
   const sizesArray = product?.size ? product.size.split(" ") : [];
-  console.log(selectedSize);
+  // console.log(selectedSize);
 
   // Custom Arrows for the slider
   const NextArrow = ({ onClick }) => (
@@ -288,11 +288,12 @@ export default function Viewproducts() {
 
             <Button
               variant="contained"
-              color="success"
               sx={{
                 width: { xs: "100%", sm: "60%", md: "50%" },
                 alignSelf: { xs: "center", md: "flex-start" },
                 mt: 4,
+                color: "#fffefe",
+                bgcolor: "#141514",
               }}
               onClick={() => {
                 const size = selectedSize[product.id];

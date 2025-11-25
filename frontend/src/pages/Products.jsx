@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import {
   Box,
@@ -19,18 +20,35 @@ import CardActionArea from "@mui/material/CardActionArea";
 import { Categories } from "../assets/assert";
 import Slider from "@mui/material/Slider";
 import { Link } from "react-router-dom";
-import  FilterListIcon from "@mui/icons-material/FilterList"; // Filter icon
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";// Clear All icon
+import FilterListIcon from "@mui/icons-material/FilterList"; // Filter icon
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline"; // Clear All icon
 import Drawer from "@mui/material/Drawer";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
   const [discount, setDiscount] = useState([]);
   //toggles between showing just 5 categories vs showing all
   const [showAll, setShowAll] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
 
+  const { search } = useLocation();
+  const queryParams = new URLSearchParams(search);
+  // for pre-selecting category from EmptyCart page
+  const categoryFromUrl = queryParams.get("category");
+  // for pre-selecting search term from Navbar search
+  const searchTerm = queryParams.get("search") || "";
+
+  const [selectedCategories, setSelectedCategories] = useState(
+    categoryFromUrl ? [categoryFromUrl] : []
+  );
+
+  const [searchQuery, setSearchQuery] = useState(searchTerm);
+
+  useEffect(() => {
+    setSearchQuery(searchTerm);
+  }, [searchTerm]);
+
+  // console.log("categoryFromUrl: ", categoryFromUrl);
 
   //price slider
   const MAX = 10000;
@@ -48,7 +66,7 @@ const Products = () => {
 
   const handlePriceSort = (_, newValue) => {
     setVal(newValue);
-    console.log(val);
+    // console.log(val);
   };
   const [val, setVal] = useState(MIN);
   const visibleCount = 5; // how many categories to show initially
@@ -57,8 +75,10 @@ const Products = () => {
     : Categories.slice(0, visibleCount);
 
   useEffect(() => {
-    fetchAllProducts();
-  }, []);
+    if (!categoryFromUrl) {
+      fetchAllProducts(); // only fetch all if no category preselected
+    }
+  }, [categoryFromUrl]);
 
   const fetchAllProducts = () => {
     axios
@@ -91,7 +111,27 @@ const Products = () => {
     } else {
       fetchFilteredProducts();
     }
-  }, [selectedCategories, val, discount]);
+  }, [selectedCategories, val, discount, categoryFromUrl]);
+
+  //search functionality
+  const fetchSearchResults = (query) => {
+    axios
+      .get(`http://localhost:8000/api/products/?search=${query}`)
+      .then((res) => setProducts(res.data))
+      .catch((err) => console.log(err));
+  };
+  useEffect(() => {
+    if (searchQuery.trim() !== "") {
+      fetchSearchResults(searchQuery);
+      return;
+    }
+
+    const noFilters =
+      selectedCategories.length === 0 && discount.length === 0 && val === MIN;
+
+    if (noFilters) fetchAllProducts();
+    else fetchFilteredProducts();
+  }, [selectedCategories, discount, val, searchQuery]);
 
   // CLEAR FILTERS
   const clearFilters = () => {

@@ -19,6 +19,7 @@ import { useState } from "react";
 import { useToast } from "../context/ToastContext";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import EmptyCart from "../components/Emptycart";
 
 const Cart = () => {
   const theme = useTheme();
@@ -37,8 +38,8 @@ const Cart = () => {
   // const [applycoupon, setApplycoupon] = useState(false);
   const [open, setOpen] = useState(false);
   // console.log("cart items:", cart);
-  if (!cart || cart.length === 0) {
-    return <p>Your cart is empty</p>;
+  if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
+    return <EmptyCart />;
   }
 
   return (
@@ -50,7 +51,7 @@ const Cart = () => {
       px={{ xs: 0, md: 35 }}
     >
       <Box width={"100%"}>
-        {cart.items.map((item) => (
+        {cart?.items?.map((item) => (
           <Card
             key={item.id}
             sx={{
@@ -193,14 +194,18 @@ const Cart = () => {
           </Card>
         ))}
 
-        <Button
-          variant="contained"
-          color="warning"
-          sx={{ m: 1 }}
-          onClick={clearCart}
-        >
-          Clear Cart
-        </Button>
+        {cart.items.length > 0 && (
+          <Button
+            variant="contained"
+            color="error"
+            sx={{ mt: 2 }}
+            onClick={() => {
+              clearCart();
+            }}
+          >
+            Clear Cart
+          </Button>
+        )}
       </Box>
 
       <Card

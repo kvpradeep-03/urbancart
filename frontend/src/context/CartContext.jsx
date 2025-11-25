@@ -14,7 +14,15 @@ import { useAuth } from "./AuthContext";
 // cartProvider component wraps the app and provides cart values to any nested components in app
 // the children is a react prop that represents whatever you wrap inside <CartProvider> in your app
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState({
+    id: null,
+    items: [],
+    total_items: 0,
+    total_mrp: 0,
+    total_discount: 0,
+    total_price: 0,
+  });
+
   const toast = useToast();
   const { user } = useAuth();
   useEffect(() => {

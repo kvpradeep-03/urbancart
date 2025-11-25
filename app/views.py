@@ -26,18 +26,28 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.db.models import F
+from django.db.models import Q
 
 class Products(APIView):
     permission_classes = [AllowAny]
-    
+
     def get(self, request):
         # gets multipe category from query params as a list like, /api/products/?category=t-shirts&category=jeanscategory=shoes&category=clothes to --> categories = ["t-shirts", "jeans"]
-        
+
         categories = request.query_params.getlist("category")
         categories = [c.lower() for c in categories]  # normalize to match DB
         price = request.query_params.get("price")
         discount = request.query_params.get("discount")
         products = Product.objects.all()
+
+        # search filter
+        search = request.query_params.get("search")
+        if search:
+            products = products.filter(
+                Q(name__icontains=search)
+                | Q(description__icontains=search)
+                | Q(category__icontains=search)
+            )
 
         # Apply category filter
         if categories:
