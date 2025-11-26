@@ -29,7 +29,6 @@ const EmptyCart = () => {
           borderRadius: 2,
         }}
       >
-        {/* Illustration */}
         <Box
           sx={{
             width: { xs: "100%", sm: 360, md: 420 },
@@ -53,7 +52,6 @@ const EmptyCart = () => {
           />
         </Box>
 
-        {/* Text & Actions */}
         <Box sx={{ flex: 1, textAlign: { xs: "center", md: "left" } }}>
           <Stack spacing={1} alignItems={{ xs: "center", md: "flex-start" }}>
             <Typography
@@ -71,8 +69,7 @@ const EmptyCart = () => {
               Looks like you haven’t added anything to your cart yet. Browse our
               categories and find items you’ll love.
             </Typography>
-
-            {/* Action buttons */}
+            
             <Stack
               direction={{ xs: "column", sm: "row" }}
               spacing={2}
@@ -95,7 +92,7 @@ const EmptyCart = () => {
                 color="inherit"
                 startIcon={<HistoryOutlinedIcon />}
                 component={RouterLink}
-                to="/orders"
+                to="/profile"
                 size="large"
                 sx={{
                   borderColor: "grey.300",

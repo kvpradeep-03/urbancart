@@ -20,13 +20,21 @@ import { useToast } from "../context/ToastContext";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import EmptyCart from "../components/Emptycart";
+import CartSkeleton from "../components/skeletons/CartSkeleton";
 
 const Cart = () => {
   const theme = useTheme();
   const toast = useToast();
   const navigate = useNavigate();
-  const { cart, removeFromCart, incQty, decQty, clearCart, placeOrder } =
-    useContext(CartContext);
+  const {
+    cart,
+    loading,
+    removeFromCart,
+    incQty,
+    decQty,
+    clearCart,
+    placeOrder,
+  } = useContext(CartContext);
 
   const [orderPlaced, setOrderPlaced] = useState(false);
 
@@ -38,7 +46,12 @@ const Cart = () => {
   // const [applycoupon, setApplycoupon] = useState(false);
   const [open, setOpen] = useState(false);
   // console.log("cart items:", cart);
-  if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
+
+  if (loading) {
+    return <CartSkeleton />;
+  }
+
+  if (!cart || cart.total_items === 0) {
     return <EmptyCart />;
   }
 
@@ -194,7 +207,7 @@ const Cart = () => {
           </Card>
         ))}
 
-        {cart.items.length > 0 && (
+        {cart?.total_items > 0 && (
           <Button
             variant="contained"
             color="error"
@@ -208,211 +221,213 @@ const Cart = () => {
         )}
       </Box>
 
-      <Card
-        sx={{
-          minWidth: 360,
-          border: "1px solid #ccc",
-          p: 2,
-          mt: 1,
-          display: "flex",
-          flexDirection: "column",
-          gap: 1,
-        }}
-      >
-        <Typography
-          variant="h6"
-          sx={{ color: "text.secondary", fontSize: 14, fontWeight: 600 }}
-        >
-          Coupons
-        </Typography>
-        <Box
+      {cart?.total_items > 0 && (
+        <Card
           sx={{
+            minWidth: 360,
+            border: "1px solid #ccc",
+            p: 2,
+            mt: 1,
             display: "flex",
-            alignItems: "center", // ensures vertical centering
-            mb: 1,
+            flexDirection: "column",
             gap: 1,
           }}
         >
-          <SvgIcon
-            component={GoTag}
-            inheritViewBox
-            sx={{
-              fontSize: { xs: 16, md: 18 }, // balanced sizes
-            }}
-          />
-          <Typography variant="h5" sx={{ fontSize: 14, fontWeight: 600 }}>
-            Apply Coupons
+          <Typography
+            variant="h6"
+            sx={{ color: "text.secondary", fontSize: 14, fontWeight: 600 }}
+          >
+            Coupons
           </Typography>
-          <Button
-            variant="outlined"
-            color="warning"
-            size="small"
-            onClick={() => setOpen(true)}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center", // ensures vertical centering
+              mb: 1,
+              gap: 1,
+            }}
           >
-            Apply
-          </Button>
-
-          {/* React automatically passes whatever you put between the opening and
-          closing tags as a prop named children. so we dont need to put them manually */}
-          <Dialogbox
-            open={open}
-            onClose={() => setOpen(false)}
-            title={"Apply Coupons"}
-          >
-            <TextField
-              size="small"
-              placeholder="Enter Coupon Code"
+            <SvgIcon
+              component={GoTag}
+              inheritViewBox
               sx={{
-                width: "400px",
-                mr: 1,
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": {
-                    borderColor: "#ccc", // default
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#000", // hover
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#000", // focus
-                  },
-                },
+                fontSize: { xs: 16, md: 18 }, // balanced sizes
               }}
             />
+            <Typography variant="h5" sx={{ fontSize: 14, fontWeight: 600 }}>
+              Apply Coupons
+            </Typography>
             <Button
-              variant="contained"
-              sx={{ backgroundColor: "black", color: "white" }}
+              variant="outlined"
+              color="warning"
+              size="small"
+              onClick={() => setOpen(true)}
             >
-              Check
+              Apply
             </Button>
-          </Dialogbox>
-        </Box>
 
-        <Divider />
-        <Box>
-          <Typography
-            variant="caption"
-            sx={{
-              color: "text.secondary",
-              fontSize: 14,
-              fontWeight: 600,
-              mb: 1,
-            }}
-          >
-            PICE DETAILS ( {cart.total_items} items)
-          </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Typography
-              variant="overline"
-              sx={{
-                fontSize: 14,
-                fontWeight: 400,
-              }}
+            {/* React automatically passes whatever you put between the opening and
+          closing tags as a prop named children. so we dont need to put them manually */}
+            <Dialogbox
+              open={open}
+              onClose={() => setOpen(false)}
+              title={"Apply Coupons"}
             >
-              Total MRP
-            </Typography>
-            <Typography>₹{cart.total_mrp}</Typography>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Typography
-              variant="overline"
-              sx={{
-                fontSize: 14,
-                fontWeight: 400,
-              }}
-            >
-              Discount on MRP
-            </Typography>
-            <Typography color="success">- ₹{cart.total_discount}</Typography>
-          </Box>
-
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Typography
-              variant="overline"
-              sx={{
-                fontSize: 14,
-                fontWeight: 400,
-              }}
-            >
-              Coupon Discount
-            </Typography>
-            <Typography color="error">apply coupon</Typography>
-          </Box>
-
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Typography
-              variant="overline"
-              sx={{
-                fontSize: 14,
-                fontWeight: 400,
-              }}
-            >
-              Delivery Charges
-            </Typography>
-            <Typography color="error">45</Typography>
+              <TextField
+                size="small"
+                placeholder="Enter Coupon Code"
+                sx={{
+                  width: "400px",
+                  mr: 1,
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: "#ccc", // default
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#000", // hover
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#000", // focus
+                    },
+                  },
+                }}
+              />
+              <Button
+                variant="contained"
+                sx={{ backgroundColor: "black", color: "white" }}
+              >
+                Check
+              </Button>
+            </Dialogbox>
           </Box>
 
           <Divider />
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
+          <Box>
             <Typography
-              variant="overline"
+              variant="caption"
               sx={{
+                color: "text.secondary",
                 fontSize: 14,
                 fontWeight: 600,
-                mt: 2,
+                mb: 1,
               }}
             >
-              Total Amount
+              PICE DETAILS ( {cart.total_items} items)
             </Typography>
-            <Typography
+            <Box
               sx={{
-                fontSize: 14,
-                fontWeight: 600,
-                mt: 2,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
               }}
             >
-              ₹{cart.total_price + 45}
-            </Typography>
+              <Typography
+                variant="overline"
+                sx={{
+                  fontSize: 14,
+                  fontWeight: 400,
+                }}
+              >
+                Total MRP
+              </Typography>
+              <Typography>₹{cart.total_mrp}</Typography>
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography
+                variant="overline"
+                sx={{
+                  fontSize: 14,
+                  fontWeight: 400,
+                }}
+              >
+                Discount on MRP
+              </Typography>
+              <Typography color="success">- ₹{cart.total_discount}</Typography>
+            </Box>
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography
+                variant="overline"
+                sx={{
+                  fontSize: 14,
+                  fontWeight: 400,
+                }}
+              >
+                Coupon Discount
+              </Typography>
+              <Typography color="error">apply coupon</Typography>
+            </Box>
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography
+                variant="overline"
+                sx={{
+                  fontSize: 14,
+                  fontWeight: 400,
+                }}
+              >
+                Delivery Charges
+              </Typography>
+              <Typography color="error">45</Typography>
+            </Box>
+
+            <Divider />
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography
+                variant="overline"
+                sx={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  mt: 2,
+                }}
+              >
+                Total Amount
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  mt: 2,
+                }}
+              >
+                ₹{cart.total_price + 45}
+              </Typography>
+            </Box>
           </Box>
-        </Box>
-        <Button
-          variant="outlined"
-          color="success"
-          onClick={handlePlaceOrder}
-          disabled={orderPlaced} // optional: disable after placing order
-        >
-          {orderPlaced ? "Order Placed " : "Place Order"}
-        </Button>
-      </Card>
+          <Button
+            variant="outlined"
+            color="success"
+            onClick={handlePlaceOrder}
+            disabled={orderPlaced} // optional: disable after placing order
+          >
+            {orderPlaced ? "Order Placed " : "Place Order"}
+          </Button>
+        </Card>
+      )}
     </Stack>
   );
 };

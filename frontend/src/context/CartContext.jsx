@@ -14,6 +14,8 @@ import { useAuth } from "./AuthContext";
 // cartProvider component wraps the app and provides cart values to any nested components in app
 // the children is a react prop that represents whatever you wrap inside <CartProvider> in your app
 export const CartProvider = ({ children }) => {
+  const [loading, setLoading] = useState(true);
+
   const [cart, setCart] = useState({
     id: null,
     items: [],
@@ -26,22 +28,25 @@ export const CartProvider = ({ children }) => {
   const toast = useToast();
   const { user } = useAuth();
   useEffect(() => {
-    if(user){
+    if (user) {
       fetchCart();
     }
   }, [user]);
 
   const fetchCart = async () => {
     try {
-      const result = await api.get("/api/cart/", { withCredentials: true });
-      setCart(result.data);
+      setLoading(true);
+      const result = await api
+        .get("/api/cart/", { withCredentials: true })
+        .finally(() => setLoading(false));
+      setCart(result.data)
+      
     } catch (err) {
-      if(err.response?.status === 401){
+      if (err.response?.status === 401) {
         return;
       }
       toast.error("Something went wrong while fetching cart");
     }
-    
   };
   const addToCart = async (productId, size) => {
     try {
@@ -91,28 +96,29 @@ export const CartProvider = ({ children }) => {
     fetchCart();
   };
 
-const clearCart = async () => {
-  try {
-    await api.delete("/api/cart/clear/", { withCredentials: true });
-    setCart([]); // clear local state after backend is cleared
-    toast.success("Cart cleared successfully");
-  } catch (err) {
-    toast.error("Error clearing cart");
-  }
-};
+  const clearCart = async () => {
+    try {
+      await api.delete("/api/cart/clear/", { withCredentials: true });
+      setCart([]); // clear local state after backend is cleared
+      fetchCart();
+      toast.success("Cart cleared successfully");
+    } catch (err) {
+      toast.error("Error clearing cart");
+    }
+  };
 
-const placeOrder = async () => {
-  try {
-    await api.post("/api/order/place/", {
-      withCredentials: true,
-    });
-    setCart([]); // clear local state after backend is cleared
-    toast.success("Your Order has been Placed Successfully, Thank you!");
-  } catch (err) {
-    toast.error("Error while placing order, please try again");
-  }
-};
-
+  const placeOrder = async () => {
+    try {
+      await api.post("/api/order/place/", {
+        withCredentials: true,
+      });
+      setCart([]); // clear local state after backend is cleared
+      fetchCart()
+      toast.success("Your Order has been Placed Successfully, Thank you!");
+    } catch (err) {
+      toast.error("Error while placing order, please try again");
+    }
+  };
 
   // memoize the context value so consumers don't re-render unnecessarily
 
@@ -127,6 +133,7 @@ const placeOrder = async () => {
       addToCart,
       removeFromCart,
       incQty,
+      loading,
       decQty,
       clearCart,
       placeOrder,

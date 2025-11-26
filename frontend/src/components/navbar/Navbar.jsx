@@ -136,7 +136,8 @@ const Navbar = ({ setShowLogin }) => {
           <IconButton
             sx={{
               display: { xs: showMobileSearch ? "none" : "block", sm: "none" },
-              ml: 35,
+              alignItems: "center",
+              ml: 41,
               mt: 0.5,
             }}
             onClick={() => setShowMobileSearch(true)}

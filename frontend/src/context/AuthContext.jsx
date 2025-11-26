@@ -9,7 +9,6 @@ import api from "../components/auth/axios";
 import { jwtDecode } from "jwt-decode";
 import { useToast } from "../context/ToastContext";
 
-
 export const AuthContext = createContext(null);
 
 export const useAuth = () => useContext(AuthContext);
@@ -22,7 +21,7 @@ export const AuthProvider = ({ children }) => {
   const toast = useToast();
   //restores the user on page load
   useEffect(() => {
-    if (isLoggingOut) return; // skip fetching user when logging out
+    if (isLoggingOut) return; // skip fetching user when logging out 
     const fetchUser = async () => {
       try {
         const response = await api.get(
@@ -42,6 +41,20 @@ export const AuthProvider = ({ children }) => {
     };
     fetchUser();
   }, [isLoggingOut]);
+
+  // Function to refresh user data
+  const userData = async () => {
+    try {
+      const response = await api.get(
+        "/api/auth/user/",
+        {},
+        { withCredentials: true }
+      );
+      setUser(response.data);
+    } catch (err) {
+      console.error("Failed to fetch user:", err);
+    }
+  };
   const signup = async (payload) => {
     setLoading(true);
     setError(null);
@@ -141,6 +154,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const editUserProfile = async (profileDate) => {
+    try {
+      const response = await api.patch(
+        "api/auth/editUserProfile/",
+        profileDate,
+        { withCredentials: true }
+      );
+      // Update user state with new editUserProfile endpoint data
+      setUser((prev) => ({
+        ...prev,
+        user: {
+          ...prev.user,
+          ...response.data,
+        },
+      }));
+      userData()
+      toast.success("Profile updated successfully");
+    
+    } catch (error) {
+      console.error("Profile updation failed:", error.response.data);
+      return false;
+    }
+  };
   return (
     <AuthContext.Provider
       value={{
@@ -153,6 +189,7 @@ export const AuthProvider = ({ children }) => {
         setLoading,
         error,
         setError,
+        editUserProfile,
       }}
     >
       {children}

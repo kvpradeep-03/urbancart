@@ -29,6 +29,7 @@ import { TbPointFilled } from "react-icons/tb";
 import { GoTag } from "react-icons/go";
 import { IoStar } from "react-icons/io5";
 import { useToast } from "../context/ToastContext";
+import ViewProductSkeleton from "../components/skeletons/ViewProductsSkeleton";
 
 export default function Viewproducts() {
   const { slug } = useParams();
@@ -128,7 +129,7 @@ export default function Viewproducts() {
     prevArrow: <PrevArrow />,
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <ViewProductSkeleton/>;
   if (error) return <div>{error}</div>;
   if (!product) return <div>Product not found</div>;
 

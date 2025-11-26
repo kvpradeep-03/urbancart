@@ -10,7 +10,7 @@ import Viewproducts from "./pages/Viewproducts";
 import Cart from "./pages/Cart";
 import Dialogbox from "./components/Dialogbox";
 import Auth from "./components/auth/Auth";
-
+import ProfilePage from "./pages/ProfilePage";
  
 
 const App = () => {
@@ -28,7 +28,7 @@ const App = () => {
             <Route path="/product/:slug" element={<Viewproducts />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/cart/dialog" element={<Dialogbox />} />
-
+            <Route path="/profile" element={<ProfilePage />} />
           </Routes>
         </ThemeProvider>
         <Footer />

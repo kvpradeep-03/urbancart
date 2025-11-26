@@ -23,10 +23,12 @@ import { Link } from "react-router-dom";
 import FilterListIcon from "@mui/icons-material/FilterList"; // Filter icon
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline"; // Clear All icon
 import Drawer from "@mui/material/Drawer";
+import ProductListSkeleton from "../components/skeletons/ProductsSkeleton";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [discount, setDiscount] = useState([]);
+  const [loading, setLoading] = useState(true);
   //toggles between showing just 5 categories vs showing all
   const [showAll, setShowAll] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -81,13 +83,16 @@ const Products = () => {
   }, [categoryFromUrl]);
 
   const fetchAllProducts = () => {
+    setLoading(true);
     axios
       .get("http://localhost:8000/api/products/")
       .then((res) => setProducts(res.data))
-      .catch((err) => console.log(err));
+      .catch((err) => console.log(err))
+      .finally(() => setLoading(false));
   };
 
   const fetchFilteredProducts = () => {
+    setLoading(true);
     const params = new URLSearchParams();
 
     selectedCategories.forEach((cat) => params.append("category", cat));
@@ -98,7 +103,8 @@ const Products = () => {
     axios
       .get(`http://localhost:8000/api/products/?${params.toString()}`)
       .then((res) => setProducts(res.data))
-      .catch((err) => console.log(err));
+      .catch((err) => console.log(err))
+      .finally(() => setLoading(false));
   };
 
   // Trigger API whenever filters change
@@ -115,10 +121,12 @@ const Products = () => {
 
   //search functionality
   const fetchSearchResults = (query) => {
+    setLoading(true);
     axios
       .get(`http://localhost:8000/api/products/?search=${query}`)
       .then((res) => setProducts(res.data))
-      .catch((err) => console.log(err));
+      .catch((err) => console.log(err))
+      .finally(() => setLoading(false));
   };
   useEffect(() => {
     if (searchQuery.trim() !== "") {
@@ -163,6 +171,9 @@ const Products = () => {
           : [...prev, value] // add if not selected
     );
   };
+  if (loading) {
+    return <ProductListSkeleton />;
+  }
 
   return (
     <Stack direction={{ xs: "column", sm: "row" }} spacing={0} mt={"auto"}>
@@ -244,7 +255,7 @@ const Products = () => {
             + {Categories.length - visibleCount} more
           </Typography>
         )}
-        {/* Optionally: allow collapse back */}
+      
         {showAll && (
           <Typography
             variant="body2"
