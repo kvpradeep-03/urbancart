@@ -26,9 +26,15 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />
             <Route path="/product/:slug" element={<Viewproducts />} />
-            <Route path="/cart" element={<Cart />} />
+            <Route
+              path="/cart"
+              element={<Cart setShowLogin={setShowLogin} />}
+            />
             <Route path="/cart/dialog" element={<Dialogbox />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route
+              path="/profile"
+              element={<ProfilePage setShowLogin={setShowLogin} />}
+            />
           </Routes>
         </ThemeProvider>
         <Footer />

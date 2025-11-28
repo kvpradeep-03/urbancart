@@ -20,11 +20,21 @@ import { useAuth } from "../context/AuthContext";
 import { TfiPackage } from "react-icons/tfi";
 import ProfileSkeleton from "../components/skeletons/ProfileSkeleton";
 import NoOrders from "../components/NoOrders";
+import PleaseLogin from "../components/PleaseLogin";
 
-export default function ProfilePage() {
-  const { user, editUserProfile } = useAuth();
+export default function ProfilePage({ setShowLogin }) {
+  const { user, editUserProfile, isAuthenticated, loading } = useAuth();
 
   // Loading Skeleton
+  if (loading) {
+    return <ProfileSkeleton />;
+  }
+
+  if (!isAuthenticated()) {
+    return <PleaseLogin onLoginClick={() => setShowLogin(true)} />;
+  }
+
+  // If authenticated but missing nested data
   if (!user || !user.user) {
     return <ProfileSkeleton />;
   }

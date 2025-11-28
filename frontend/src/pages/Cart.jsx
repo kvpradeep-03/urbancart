@@ -21,8 +21,10 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import EmptyCart from "../components/Emptycart";
 import CartSkeleton from "../components/skeletons/CartSkeleton";
+import { useAuth } from "../context/AuthContext";
+import PleaseLogin from "../components/PleaseLogin";
 
-const Cart = () => {
+const Cart = ({setShowLogin}) => {
   const theme = useTheme();
   const toast = useToast();
   const navigate = useNavigate();
@@ -36,6 +38,8 @@ const Cart = () => {
     placeOrder,
   } = useContext(CartContext);
 
+  const { isAuthenticated } = useAuth();
+
   const [orderPlaced, setOrderPlaced] = useState(false);
 
   const handlePlaceOrder = () => {
@@ -46,6 +50,10 @@ const Cart = () => {
   // const [applycoupon, setApplycoupon] = useState(false);
   const [open, setOpen] = useState(false);
   // console.log("cart items:", cart);
+
+  if (!isAuthenticated()) {
+    return <PleaseLogin onLoginClick={() => setShowLogin(true)} />;
+  }
 
   if (loading) {
     return <CartSkeleton />;

@@ -44,9 +44,6 @@ export default function CustomizedMenus({ setShowLogin }) {
     logout();
     toast.default("Logged Out Successfully");
   };
-  if (!user) {
-    return null;
-  }
 
   return (
     <div>
