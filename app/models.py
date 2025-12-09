@@ -182,6 +182,20 @@ class Order(models.Model):
     )
     total_amount = models.IntegerField(default=0)
 
+    shipping_name = models.CharField(max_length=255, null=True, blank=True)
+    shipping_phone = models.CharField(max_length=20, null=True, blank=True)
+    shipping_street = models.CharField(max_length=255, null=True, blank=True)
+    shipping_city = models.CharField(max_length=100, null=True, blank=True)
+    shipping_state = models.CharField(max_length=100, null=True, blank=True)
+    shipping_pincode = models.CharField(max_length=10, null=True, blank=True)
+
+    payment_method = models.CharField(max_length=30, default="Cash on delivery")
+    payment_status = models.CharField(max_length=30, default="pending")
+
+    razorpay_order_id = models.CharField(max_length=100, null=True, blank=True)
+    razorpay_payment_id = models.CharField(max_length=100, null = True, blank=True)
+    razorpay_signature = models.CharField(max_length=255, null=True, blank=True)
+
     def save(self, *args, **kwargs):
         # generates unique order_id beacuse we the order_id is circulated in urls
         # so if possible anyone can itertate over the orders like api/orders/13... 33.. to prevent this we using UUID

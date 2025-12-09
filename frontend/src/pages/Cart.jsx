@@ -4,11 +4,7 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
-import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
-import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import SkipNextIcon from "@mui/icons-material/SkipNext";
 import { CartContext } from "../context/CartContext";
 import { useContext } from "react";
 import { Button, Divider, Stack, SvgIcon, TextField } from "@mui/material";
@@ -23,8 +19,9 @@ import EmptyCart from "../components/Emptycart";
 import CartSkeleton from "../components/skeletons/CartSkeleton";
 import { useAuth } from "../context/AuthContext";
 import PleaseLogin from "../components/PleaseLogin";
+import { Link } from "react-router-dom";
 
-const Cart = ({setShowLogin}) => {
+const Cart = ({ setShowLogin }) => {
   const theme = useTheme();
   const toast = useToast();
   const navigate = useNavigate();
@@ -40,12 +37,7 @@ const Cart = ({setShowLogin}) => {
 
   const { isAuthenticated } = useAuth();
 
-  const [orderPlaced, setOrderPlaced] = useState(false);
-
-  const handlePlaceOrder = () => {
-    placeOrder();
-    setOrderPlaced(true);
-  };
+  // TODO: integrate this razopay while payment checkout and return their response to the placeorder endpoint that should sent the payment infos and order details in mail 
 
   // const [applycoupon, setApplycoupon] = useState(false);
   const [open, setOpen] = useState(false);
@@ -65,9 +57,9 @@ const Cart = ({setShowLogin}) => {
 
   return (
     <Stack
-      direction={{ xs: "column", md: "row" }} // column on mobile, row on desktop
+      direction={{ xs: "column", sm: "row", md: "row", lg: "row" }} // column on mobile, row on desktop
       justifyContent="space-between"
-      alignItems={{ xs: "center", md: "flex-start" }}
+      alignItems={{ xs: "center", sm: "flex-start", md: "flex-start", lg:"flex-start" }}
       m={2}
       px={{ xs: 0, md: 35 }}
     >
@@ -219,7 +211,7 @@ const Cart = ({setShowLogin}) => {
           <Button
             variant="contained"
             color="error"
-            sx={{ mt: 2 }}
+            sx={{ mt: 2, ml:1.5, mb:2 }}
             onClick={() => {
               clearCart();
             }}
@@ -429,10 +421,10 @@ const Cart = ({setShowLogin}) => {
           <Button
             variant="outlined"
             color="success"
-            onClick={handlePlaceOrder}
-            disabled={orderPlaced} // optional: disable after placing order
+            component={Link}
+            to={`/checkout`}
           >
-            {orderPlaced ? "Order Placed " : "Place Order"}
+            Place Order
           </Button>
         </Card>
       )}

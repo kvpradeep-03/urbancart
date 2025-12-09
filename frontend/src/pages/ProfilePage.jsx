@@ -177,7 +177,7 @@ export default function ProfilePage({ setShowLogin }) {
               ))}
             </Grid>
           ) : (
-            <Grid container spacing={2}>
+            <Grid container spacing={2} justifyContent={"center"}>
               {["username", "email", "phone", "city", "state", "address"].map(
                 (field) => (
                   <Grid item xs={12} md={6} key={field}>

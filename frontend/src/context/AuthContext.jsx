@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
   const toast = useToast();
   //restores the user on page load
   useEffect(() => {
-    if (isLoggingOut) return; // skip fetching user when logging out 
+    if (isLoggingOut) return; // skip fetching user when logging out
     const fetchUser = async () => {
       try {
         const response = await api.get(
@@ -155,11 +155,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const editUserProfile = async (profileDate) => {
+  const editUserProfile = async (profileData) => {
     try {
       const response = await api.patch(
         "api/auth/editUserProfile/",
-        profileDate,
+        profileData,
         { withCredentials: true }
       );
       // Update user state with new editUserProfile endpoint data
@@ -170,12 +170,16 @@ export const AuthProvider = ({ children }) => {
           ...response.data,
         },
       }));
-      userData()
+      userData();
       toast.success("Profile updated successfully");
-    
     } catch (error) {
-      console.error("Profile updation failed:", error.response.data);
-      return false;
+      const errorMsg =
+        error?.response?.data?.error ||
+        error?.response?.data?.username?.[0] ||
+        error?.response?.data?.email?.[0] ||
+        "Something went wrong";
+
+      toast.error(errorMsg);
     }
   };
   return (

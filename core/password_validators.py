@@ -4,6 +4,7 @@ from django.utils.translation import gettext as _
 
 
 class StrongPasswordValidator:
+    # custom password validator which is now used as a default password validator by setting this in AUTH_PASSWORD_VALIDATORS in settings.py
     """
     Validator to enforce strong password rules.
     Minimum 8 characters

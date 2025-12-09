@@ -1,4 +1,5 @@
 import os
+import re
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -338,19 +339,38 @@ class EditUserProfile(APIView):
 
             user.email = new_email
 
-        username_validator = UnicodeUsernameValidator()
         new_username = request.data.get("username")
         if new_username:
-            try:
-                username_validator(new_username)
-            except ValidationError:
-                return Response({"error": "Invalid username format"}, status=400)
+            new_username = new_username.strip()
+            if not 8 <= len(new_username) <= 16:
+                return Response(
+                    {"error": "Username must be between 8 and 16 characters long"},
+                    status=400
+                )
 
-            # check uniqueness (excluding current user)
-            if (CustomUser.objects.filter(username=new_username).exclude(id=user.id).exists()):
-                return Response({"error": "Username already in use"}, status=400)
+            if not re.fullmatch(r"[A-Za-z0-9@#$%^&*!._+\-\s]+", new_username):
+                return Response(
+                    {"error": "Username contains invalid characters"},
+                    status=400
+                )
+
+            
+            letters_count = len(re.findall(r"[A-Za-z]", new_username))
+            if letters_count < 4:
+                return Response(
+                    {"error": "Username must contain at least 4 letters"},
+                    status=400
+                )
+
+            # Check uniqueness (excluding current user)
+            if CustomUser.objects.filter(username=new_username).exclude(id=user.id).exists():
+                return Response(
+                    {"error": "Username already in use"},
+                    status=400
+                )
 
             user.username = new_username
+
 
         phone = request.data.get("phone")
         if phone:

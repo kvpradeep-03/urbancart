@@ -16,6 +16,9 @@ from .views import (
     AdminDashboardStats,
     EditProduct,
     ClearCart,
+    CreateRazorpayOrder,
+    VerifyRazorpayPayment,
+    OrderDetail,
 )
 
 
@@ -39,4 +42,8 @@ urlpatterns = [
     path("api/admin/deleteProduct/<int:product_id>/", DeleteProduct.as_view()),
     path("api/admin/adminDashboardStats/", AdminDashboardStats.as_view()),
     path("api/admin/editProduct/<int:product_id>/", EditProduct.as_view()),
+    path("api/payment/create-order/", CreateRazorpayOrder.as_view()),
+    path("api/payment/verify/", VerifyRazorpayPayment.as_view()),
+    path("api/order/place/", PlaceOrder.as_view()),
+    path("api/order/details/<str:order_id>/", OrderDetail.as_view()),
 ]

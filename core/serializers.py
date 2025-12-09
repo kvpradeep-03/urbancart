@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_str, force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-
+import re
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """Serializer for Registration (Signup)"""
@@ -28,6 +28,25 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         """Ensure email is unique."""
         if CustomUser.objects.filter(email=value).exists():
             raise serializers.ValidationError("A user with this email already exists.")
+        return value
+
+
+    def validate_username(self, value):
+        value = value.strip()
+        if not 8 <= len(value) <= 16:
+            raise serializers.ValidationError(
+                "Username must be between 8 and 16 characters long."
+            )
+
+        # Allowed characters check
+        if not re.fullmatch(r"[A-Za-z0-9@#$%^&*!._+\-\s]+", value):
+            raise serializers.ValidationError("Username contains invalid characters.")
+
+        # Count minimum 4 letters
+        letters_count = len(re.findall(r"[A-Za-z]", value))
+        if letters_count < 4:
+            raise serializers.ValidationError("Username must contain at least 4 letters.")
+
         return value
 
     def validate_password(self, value):

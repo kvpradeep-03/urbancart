@@ -153,6 +153,51 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ["id", "order_id", "order_date", "status", "total_amount", "items"]
 
+
+class ProductInOrderSerializer(serializers.ModelSerializer):
+    thumbnail = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderItem
+        fields = ["product", "quantity", "price", "thumbnail"]
+
+    def get_thumbnail(self, obj):
+        return obj.product.thumbnail.url
+
+
+class OrderDetailSerializer(serializers.ModelSerializer):
+    items = ProductInOrderSerializer(source="orderitem_set", many=True)
+    address = serializers.SerializerMethodField()
+    payment_id = serializers.SerializerMethodField()
+    order_date = serializers.DateTimeField(format="%d-%m-%Y %I:%M %p", read_only=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            "order_id",
+            "order_date",
+            "payment_method",
+            "payment_status",
+            "payment_id",
+            "total_amount",
+            "items",
+        ]
+
+
+    def get_address(self, obj):
+        return {
+            "name": obj.shipping_name,
+            "phone": obj.shipping_phone,
+            "street": obj.shipping_address,
+            "city": obj.shipping_city,
+            "state": obj.shipping_state,
+            "pincode": obj.shipping_pincode,
+        }
+
+    def get_payment_id(self, obj):
+        return obj.razorpay_payment_id or "-"
+
+
 class CreateProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product

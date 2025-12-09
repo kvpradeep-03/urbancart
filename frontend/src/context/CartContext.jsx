@@ -39,8 +39,7 @@ export const CartProvider = ({ children }) => {
       const result = await api
         .get("/api/cart/", { withCredentials: true })
         .finally(() => setLoading(false));
-      setCart(result.data)
-      
+      setCart(result.data);
     } catch (err) {
       if (err.response?.status === 401) {
         return;
@@ -107,18 +106,52 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const placeOrder = async () => {
-    try {
-      await api.post("/api/order/place/", {
-        withCredentials: true,
-      });
-      setCart([]); // clear local state after backend is cleared
-      fetchCart()
-      toast.success("Your Order has been Placed Successfully, Thank you!");
-    } catch (err) {
-      toast.error("Error while placing order, please try again");
-    }
-  };
+const placeOrder = async (formData) => {
+  try {
+    const res = await api.post("/api/order/place/", formData, {
+      withCredentials: true,
+    });
+    setCart([]);
+    fetchCart();
+    toast.success("Your Order has been Placed Successfully, Thank you!");
+    return res;
+  } catch (err) {
+    const msg = err?.response?.data?.error || "Order failed";
+    toast.error(msg);
+   
+  }
+};
+
+
+const razorpayCreateOrder = async (formData) => {
+  try {
+    const res = await api.post("/api/payment/create-order/", formData, {
+      withCredentials: true,
+    });
+    return res;
+  } catch (err) {
+    const msg = err?.response?.data?.error || "Unable to create order";
+    toast.error(msg);
+  
+  }
+};
+
+
+const razorpayVerifyPayment = async (formData) => {
+  try {
+    const res = await api.post("/api/payment/verify/", formData, {
+      withCredentials: true,
+    });
+    setCart([]);
+    fetchCart();
+    return res;
+  } catch (err) {
+    const msg = err?.response?.data?.error || "Payment verification failed";
+    toast.error(msg);
+    throw err;
+  }
+};
+
 
   // memoize the context value so consumers don't re-render unnecessarily
 
@@ -134,11 +167,24 @@ export const CartProvider = ({ children }) => {
       removeFromCart,
       incQty,
       loading,
+      razorpayCreateOrder,
+      razorpayVerifyPayment,
       decQty,
       clearCart,
       placeOrder,
     }),
-    [cart, addToCart, removeFromCart, incQty, decQty, clearCart, placeOrder]
+    [
+      cart,
+      addToCart,
+      razorpayCreateOrder,
+      razorpayVerifyPayment,
+      loading,
+      removeFromCart,
+      incQty,
+      decQty,
+      clearCart,
+      placeOrder,
+    ]
   );
   // passing the cart state and functions as the context value to app components
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

@@ -11,6 +11,7 @@ import Cart from "./pages/Cart";
 import Dialogbox from "./components/Dialogbox";
 import Auth from "./components/auth/Auth";
 import ProfilePage from "./pages/ProfilePage";
+import Checkout from "./pages/Checkout";
  
 
 const App = () => {
@@ -35,6 +36,7 @@ const App = () => {
               path="/profile"
               element={<ProfilePage setShowLogin={setShowLogin} />}
             />
+            <Route path="/checkout" element={<Checkout />} />
           </Routes>
         </ThemeProvider>
         <Footer />
