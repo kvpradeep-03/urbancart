@@ -12,6 +12,7 @@ import Dialogbox from "./components/Dialogbox";
 import Auth from "./components/auth/Auth";
 import ProfilePage from "./pages/ProfilePage";
 import Checkout from "./pages/Checkout";
+import OrderSuccess from "./pages/OrderSuccess";
  
 
 const App = () => {
@@ -37,6 +38,7 @@ const App = () => {
               element={<ProfilePage setShowLogin={setShowLogin} />}
             />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/order-success/:orderId" element={<OrderSuccess />} />
           </Routes>
         </ThemeProvider>
         <Footer />

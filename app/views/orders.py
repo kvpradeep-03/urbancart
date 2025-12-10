@@ -19,7 +19,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import (
     get_object_or_404,
 )
-
+from django.db.models import Q
 # brevo email service api
 import brevo_python
 from brevo_python.rest import ApiException
@@ -422,7 +422,9 @@ class OrderDetail(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, order_id):
-        order = get_object_or_404(Order, order_id=order_id, user=request.user)
+        order = get_object_or_404(
+            Order, Q(order_id=order_id) | Q(razorpay_order_id=order_id), user=request.user
+        )
         serializer = OrderDetailSerializer(order)
         return Response(serializer.data)
 

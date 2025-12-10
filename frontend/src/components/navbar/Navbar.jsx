@@ -23,6 +23,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { Link } from "react-router-dom";
 import { useContext } from "react";
 import { CartContext } from "../../context/CartContext";
+import { TfiPackage } from "react-icons/tfi";
 
 const Navbar = ({ setShowLogin }) => {
   const { cart } = useContext(CartContext);
@@ -64,6 +65,23 @@ const Navbar = ({ setShowLogin }) => {
         >
           Cart
         </Typography>
+      </Box>
+    </Link>,
+    <Link to="/profile" style={{ textDecoration: "none", color: "inherit" }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          cursor: "pointer",
+        }}
+      >
+        <SvgIcon
+          component={TfiPackage}
+          inheritViewBox
+          sx={{ fontSize: { xs: 16, sm: 20 } }}
+        />
+        <Typography sx={{ textTransform: "none" }}>Orders</Typography>
       </Box>
     </Link>,
   ];

@@ -166,7 +166,7 @@ class ProductInOrderSerializer(serializers.ModelSerializer):
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):
-    items = ProductInOrderSerializer(source="orderitem_set", many=True)
+    items = ProductInOrderSerializer(many=True, read_only=True)
     address = serializers.SerializerMethodField()
     payment_id = serializers.SerializerMethodField()
     order_date = serializers.DateTimeField(format="%d-%m-%Y %I:%M %p", read_only=True)
@@ -180,6 +180,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "payment_status",
             "payment_id",
             "total_amount",
+            "address",
             "items",
         ]
 
@@ -188,7 +189,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         return {
             "name": obj.shipping_name,
             "phone": obj.shipping_phone,
-            "street": obj.shipping_address,
+            "street": obj.shipping_street,
             "city": obj.shipping_city,
             "state": obj.shipping_state,
             "pincode": obj.shipping_pincode,

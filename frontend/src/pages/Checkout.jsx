@@ -53,7 +53,7 @@ const CheckoutPage = () => {
     try {
       const formData = new FormData();
       Object.keys(shipping).forEach((f) => formData.append(f, shipping[f]));
-      await placeOrder(formData);
+      const res = await placeOrder(formData);
       navigate(`/order-success/${res.data.order_id}`);
     } catch (error) {
       const errorMsg = error?.response?.data?.error;
@@ -84,7 +84,7 @@ const CheckoutPage = () => {
         formData.append("razorpay_signature", response.razorpay_signature);
 
         await razorpayVerifyPayment(formData);
-        navigate(`/order-success/${res.data.razorpay_order_id}`);
+        navigate(`/order-success/${response.razorpay_order_id}`);
       },
 
       prefill: {

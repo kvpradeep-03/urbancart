@@ -147,19 +147,27 @@ export default function CustomizedMenus({ setShowLogin }) {
           </MenuItem>
         )}
 
-        <Divider sx={{ my: 0.5 }} />
+        {/* <Divider sx={{ my: 0.5 }} />
         <MenuItem
           onClick={handleClose}
           disableRipple
-          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+          component={Link}
+          to="/profile"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            textDecoration: "none",
+          }}
         >
           <SvgIcon
             component={TfiPackage}
             inheritViewBox
-            sx={{ fontSize: { xs: 16, sm: 20 }, display: "block" }}
+            sx={{ fontSize: { xs: 16, sm: 20 } }}
           />
           <Typography sx={{ textTransform: "none" }}>Orders</Typography>
         </MenuItem>
+
         <MenuItem
           onClick={handleClose}
           disableRipple
@@ -173,7 +181,7 @@ export default function CustomizedMenus({ setShowLogin }) {
           <Typography sx={{ textTransform: "none" }}>
             Track My Orders
           </Typography>
-        </MenuItem>
+        </MenuItem> */}
       </Menu>
     </div>
   );
