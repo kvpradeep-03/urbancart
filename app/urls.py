@@ -1,24 +1,30 @@
 from django.urls import path, include
-from . import views
-from .views import (
+
+from .views.products import (
     Products,
     ViewProducts,
+)
+from .views.cart import (
     AddToCart,
     ViewCart,
     UpdateCartQuantity,
     RemoveCartItem,
+    ClearCart,
+)
+from .views.orders import (
     PlaceOrder,
+    CreateRazorpayOrder,
+    VerifyRazorpayPayment,
+    OrderDetail,
     UserOrders,
-    OrderDetailsList,
-    UpdateOrderStatus,
+)
+from .views.admin import (
     CreateProduct,
     DeleteProduct,
     AdminDashboardStats,
     EditProduct,
-    ClearCart,
-    CreateRazorpayOrder,
-    VerifyRazorpayPayment,
-    OrderDetail,
+    OrderDetailsList,
+    UpdateOrderStatus,
 )
 
 
