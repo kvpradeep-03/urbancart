@@ -2,15 +2,12 @@ import React, {
   useState,
   createContext,
   useContext,
-  useRef,
   useEffect,
 } from "react";
 import api from "../components/auth/axios";
-import { jwtDecode } from "jwt-decode";
 import { useToast } from "../context/ToastContext";
 
 export const AuthContext = createContext(null);
-
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {

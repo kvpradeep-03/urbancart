@@ -13,6 +13,8 @@ import Auth from "./components/auth/Auth";
 import ProfilePage from "./pages/ProfilePage";
 import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
+import ForgetPassword from "./pages/ForgetPassword";
+import ResetPassword from "./pages/ResetPassword";
  
 
 const App = () => {
@@ -39,6 +41,8 @@ const App = () => {
             />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order-success/:orderId" element={<OrderSuccess />} />
+            <Route path="/forgot-password" element={<ForgetPassword />} />
+            <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
           </Routes>
         </ThemeProvider>
         <Footer />

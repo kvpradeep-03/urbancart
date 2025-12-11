@@ -455,7 +455,7 @@ class DeleteAccountAPIView(APIView):
 
 class PasswordResetRequestAPIView(APIView):
     """
-    Takes an email address aand sends a password reset link containing a uid and token to tthae mail.
+    Takes an email address and sends a password reset link containing a uid and token to the mail.
     """
 
     permission_classes = []
