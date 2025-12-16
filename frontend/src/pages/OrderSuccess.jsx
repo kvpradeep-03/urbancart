@@ -13,6 +13,9 @@ import {
 import api from "../components/auth/axios";
 
 const OrderSuccess = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  });
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -53,7 +56,11 @@ const OrderSuccess = () => {
       <Box sx={{ display: "flex", justifyContent: "center", width: "100%" }}>
         <Alert
           severity="success"
-          sx={{ mb: 4, width: {sm:"60%",md:"60%"}, justifyContent: "center" }}
+          sx={{
+            mb: 4,
+            width: { sm: "60%", md: "60%" },
+            justifyContent: "center",
+          }}
         >
           Your order placed successfully. Thankyou
         </Alert>

@@ -22,6 +22,9 @@ import PleaseLogin from "../components/PleaseLogin";
 import { Link } from "react-router-dom";
 
 const Cart = ({ setShowLogin }) => {
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  });
   const theme = useTheme();
   const toast = useToast();
   const navigate = useNavigate();
@@ -37,7 +40,7 @@ const Cart = ({ setShowLogin }) => {
 
   const { isAuthenticated } = useAuth();
 
-  // TODO: integrate this razopay while payment checkout and return their response to the placeorder endpoint that should sent the payment infos and order details in mail 
+  // TODO: integrate this razopay while payment checkout and return their response to the placeorder endpoint that should sent the payment infos and order details in mail
 
   // const [applycoupon, setApplycoupon] = useState(false);
   const [open, setOpen] = useState(false);
@@ -59,7 +62,12 @@ const Cart = ({ setShowLogin }) => {
     <Stack
       direction={{ xs: "column", sm: "row", md: "row", lg: "row" }} // column on mobile, row on desktop
       justifyContent="space-between"
-      alignItems={{ xs: "center", sm: "flex-start", md: "flex-start", lg:"flex-start" }}
+      alignItems={{
+        xs: "center",
+        sm: "flex-start",
+        md: "flex-start",
+        lg: "flex-start",
+      }}
       m={2}
       px={{ xs: 0, md: 35 }}
     >
@@ -211,7 +219,7 @@ const Cart = ({ setShowLogin }) => {
           <Button
             variant="contained"
             color="error"
-            sx={{ mt: 2, ml:1.5, mb:2 }}
+            sx={{ mt: 2, ml: 1.5, mb: 2 }}
             onClick={() => {
               clearCart();
             }}

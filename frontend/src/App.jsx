@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar/Navbar";
 import Products from "./pages/Products";
@@ -15,7 +15,6 @@ import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import ForgetPassword from "./pages/ForgetPassword";
 import ResetPassword from "./pages/ResetPassword";
- 
 
 const App = () => {
   const [showLogin, setShowLogin] = React.useState(false);
@@ -42,7 +41,10 @@ const App = () => {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order-success/:orderId" element={<OrderSuccess />} />
             <Route path="/forgot-password" element={<ForgetPassword />} />
-            <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
+            <Route
+              path="/reset-password/:uid/:token"
+              element={<ResetPassword />}
+            />
           </Routes>
         </ThemeProvider>
         <Footer />

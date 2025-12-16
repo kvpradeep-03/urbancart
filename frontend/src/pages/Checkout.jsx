@@ -20,6 +20,9 @@ import { useToast } from "../context/ToastContext";
 import CheckoutSkeleton from "../components/skeletons/CheckoutSkeleton";
 
 const CheckoutPage = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  });
   const {
     cart,
     loading,

@@ -23,6 +23,9 @@ import NoOrders from "../components/NoOrders";
 import PleaseLogin from "../components/PleaseLogin";
 
 export default function ProfilePage({ setShowLogin }) {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  });
   const { user, editUserProfile, isAuthenticated, loading } = useAuth();
 
   // Loading Skeleton
