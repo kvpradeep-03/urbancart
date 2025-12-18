@@ -26,6 +26,9 @@ import Drawer from "@mui/material/Drawer";
 import ProductListSkeleton from "../components/skeletons/ProductsSkeleton";
 
 const Products = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  });
   const [products, setProducts] = useState([]);
   const [discount, setDiscount] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -255,7 +258,7 @@ const Products = () => {
             + {Categories.length - visibleCount} more
           </Typography>
         )}
-      
+
         {showAll && (
           <Typography
             variant="body2"

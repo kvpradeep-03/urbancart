@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Paper,
@@ -13,6 +13,9 @@ import { useToast } from "../context/ToastContext";
 import axios from "axios";
 
 const ResetPassword = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  });
   const { uid } = useParams();
   const { token } = useParams();
   const [new_password, setnew_Password] = useState("");
@@ -71,7 +74,6 @@ const ResetPassword = () => {
       } else {
         toast.error("Something went wrong.");
       }
-
     }
   };
 

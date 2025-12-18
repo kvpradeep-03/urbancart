@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Paper,
@@ -12,6 +12,9 @@ import axios from "axios";
 import { useToast } from "../context/ToastContext";
 
 const ForgetPassword = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  });
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");

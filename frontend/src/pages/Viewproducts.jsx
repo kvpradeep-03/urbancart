@@ -32,6 +32,9 @@ import { useToast } from "../context/ToastContext";
 import ViewProductSkeleton from "../components/skeletons/ViewProductsSkeleton";
 
 export default function Viewproducts() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  });
   const { slug } = useParams();
   const { addToCart, cart } = useContext(CartContext);
   const [product, setProduct] = useState(null);
@@ -129,7 +132,7 @@ export default function Viewproducts() {
     prevArrow: <PrevArrow />,
   };
 
-  if (loading) return <ViewProductSkeleton/>;
+  if (loading) return <ViewProductSkeleton />;
   if (error) return <div>{error}</div>;
   if (!product) return <div>Product not found</div>;
 
