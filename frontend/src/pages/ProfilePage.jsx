@@ -26,24 +26,25 @@ export default function ProfilePage({ setShowLogin }) {
   useEffect(() => {
     window.scrollTo(0, 0);
   });
+
   const { user, editUserProfile, isAuthenticated, loading } = useAuth();
-
-  // Loading Skeleton
-  if (loading) {
-    return <ProfileSkeleton />;
-  }
-
-  if (!isAuthenticated()) {
-    return <PleaseLogin onLoginClick={() => setShowLogin(true)} />;
-  }
-
-  // If authenticated but missing nested data
-  if (!user || !user.user) {
-    return <ProfileSkeleton />;
-  }
 
   const userInfo = user?.user;
   const orders = user?.orders || [];
+
+  // Populate form ONLY after user is available
+  useEffect(() => {
+    if (userInfo) {
+      setForm({
+        username: userInfo.username || "",
+        email: userInfo.email || "",
+        phone: userInfo.phone || "",
+        city: userInfo.city || "",
+        state: userInfo.state || "",
+        address: userInfo.address || "",
+      });
+    }
+  }, [userInfo]);
 
   // Hooks must ALWAYS be top-level, not conditional
   const [editing, setEditing] = useState(false);
@@ -58,19 +59,19 @@ export default function ProfilePage({ setShowLogin }) {
     address: "",
   });
 
-  // Populate form ONLY after user is available
-  useEffect(() => {
-    if (user) {
-      setForm({
-        username: userInfo.username || "",
-        email: userInfo.email || "",
-        phone: userInfo.phone || "",
-        city: userInfo.city || "",
-        state: userInfo.state || "",
-        address: userInfo.address || "",
-      });
-    }
-  }, [userInfo]);
+  // If authenticated but missing nested data
+  if (!user || !user.user) {
+    return <ProfileSkeleton />;
+  }
+
+  // Loading Skeleton
+  if (loading) {
+    return <ProfileSkeleton />;
+  }
+
+  if (!isAuthenticated()) {
+    return <PleaseLogin onLoginClick={() => setShowLogin(true)} />;
+  }
 
   // Status Color Handler
   const getStatusColor = (status) => {
@@ -241,10 +242,13 @@ export default function ProfilePage({ setShowLogin }) {
                       primary={item.product.name}
                       secondary={
                         <>
-                          <Typography variant="body2">
+                          <Typography component="span" variant="body2">
                             Price: ₹{item.price}
                           </Typography>
-                          <Typography variant="body2">
+                          <Typography
+                            component="span"
+                            variant="body2"
+                          >
                             Qty: {item.quantity}
                           </Typography>
                         </>
