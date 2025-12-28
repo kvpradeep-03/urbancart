@@ -47,10 +47,20 @@ INSTALLED_APPS = [
     "app.apps.ShopAppConfig",
     "core",
     "rest_framework",
-    "rest_framework.authtoken",  # <-- For handling
+    "rest_framework.authtoken",
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
+    # image storage
+    "cloudinary",
+    "cloudinary_storage",
 ]
+
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": os.getenv("CLOUDINARY_CLOUD_NAME"),
+    "API_KEY": os.getenv("CLOUDINARY_API_KEY"),
+    "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
+}
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 # enables token authentication and allows unrestricted access to all endpoints by default.
 # now by default it checks cookies in requests.
@@ -188,8 +198,3 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # User Model
 AUTH_USER_MODEL = "core.CustomUser"
 
-# URL prefix for serving media files
-MEDIA_URL = "/media/"
-
-# Absolute path to the directory where media files are stored
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")

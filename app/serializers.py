@@ -24,6 +24,9 @@ class ProductSerializers(serializers.ModelSerializer):
     # SerializerMethodField tells DRF: "Call a method named get_<fieldname>()"
     # whenever this field is serialized like this.
     discount_amount = serializers.SerializerMethodField()
+    thumbnail = serializers.ImageField(
+        read_only=True
+    )  # ImageField automatically uses thumbnail.url form cloudinary database( django knows how to get url from cloudinary storage )
     # many=True because a product can have multiple images
     # read_only=True means this nested field is included in responses but not expected/used for creating/updating via the same serializer (to support writes you’d need custom create/update logic).
     images = ProductImageSerializer(many=True, read_only=True)  # related_name="images"
