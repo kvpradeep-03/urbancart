@@ -1,6 +1,4 @@
-#!/bin/sh
-'''exec' "/media/pradeep/New Volume/developer/urbancart/venv/bin/python3" "$0" "$@"
-' '''
+#!/home/pradeep/Documents/developer/urbancart/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
