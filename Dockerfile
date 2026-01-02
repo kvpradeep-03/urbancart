@@ -46,6 +46,9 @@ COPY --from=builder /install /usr/local
 # Copies entire app's code except .dockerignore file
 COPY . .
 
+# Collect static files
+RUN python manage.py collectstatic --noinput
+
 EXPOSE 8000
 
 # Starting the container with gunicorn

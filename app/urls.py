@@ -27,8 +27,10 @@ from .views.admin import (
     UpdateOrderStatus,
 )
 
+from app.health import health_check
 
 urlpatterns = [
+    path("health/", health_check),
     path("api/products/", Products.as_view(), name="products"),
     path(
         "api/products/<slug:slug>/", ViewProducts.as_view(), name="view-product"
