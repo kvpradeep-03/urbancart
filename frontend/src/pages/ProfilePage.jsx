@@ -234,7 +234,7 @@ export default function ProfilePage({ setShowLogin }) {
                     <ListItemAvatar>
                       <Avatar
                         variant="rounded"
-                        src={`http://localhost:8000${item.product.thumbnail}`}
+                        src={item.product.thumbnail}
                         sx={{ width: 80, height: 90, mr: 2 }}
                       />
                     </ListItemAvatar>

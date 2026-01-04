@@ -94,7 +94,7 @@ class UpdateOrderStatus(APIView):
                 "[[OLD_STATUS]]": old_status,
                 "[[NEW_STATUS]]": new_status,
                 "[[ORDER_DATE]]": order.order_date.strftime("%d-%m-%Y %I:%M %p"),
-                "[[TRACKING_URL]]": f"https://urbancart.com/track/{order.order_id}",
+                "[[TRACKING_URL]]": f"https://urbancartapp.netlify.app/{order.order_id}",
             }
 
             for placeholder, value in replacements.items():
