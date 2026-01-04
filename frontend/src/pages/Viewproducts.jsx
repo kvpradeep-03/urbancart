@@ -56,7 +56,7 @@ export default function Viewproducts() {
   // for similar products
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/products")
+      .get("https://urbancart-ky8r.onrender.com/api/products")
       .then((result) => setProducts(result.data))
       .catch((error) => console.log(error));
   }, []);
@@ -67,7 +67,7 @@ export default function Viewproducts() {
     setError(null);
 
     axios
-      .get(`http://localhost:8000/api/products/${slug}/`)
+      .get(`https://urbancart-ky8r.onrender.com/api/products/${slug}/`)
       .then((res) => {
         setProduct(res.data);
       })

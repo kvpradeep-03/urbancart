@@ -484,7 +484,7 @@ class PasswordResetRequestAPIView(APIView):
 
                 replacements = {
                     "[[USER_NAME]]": user.username,
-                    "[[RESET_LINK]]": f"http://localhost:5173/reset-password/{uid}/{token}/",
+                    "[[RESET_LINK]]": f"https://urbancartapp.netlify.app/reset-password/{uid}/{token}/",
                 }
                 for placeholder, value in replacements.items():
                     if value is not None:

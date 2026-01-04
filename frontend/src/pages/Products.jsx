@@ -88,7 +88,7 @@ const Products = () => {
   const fetchAllProducts = () => {
     setLoading(true);
     axios
-      .get("http://localhost:8000/api/products/")
+      .get("https://urbancart-ky8r.onrender.com/api/products/")
       .then((res) => setProducts(res.data))
       .catch((err) => console.log(err))
       .finally(() => setLoading(false));
@@ -104,7 +104,9 @@ const Products = () => {
     if (val !== MIN) params.append("price", val);
 
     axios
-      .get(`http://localhost:8000/api/products/?${params.toString()}`)
+      .get(
+        `https://urbancart-ky8r.onrender.com/api/products/?${params.toString()}`
+      )
       .then((res) => setProducts(res.data))
       .catch((err) => console.log(err))
       .finally(() => setLoading(false));
@@ -126,7 +128,7 @@ const Products = () => {
   const fetchSearchResults = (query) => {
     setLoading(true);
     axios
-      .get(`http://localhost:8000/api/products/?search=${query}`)
+      .get(`https://urbancart-ky8r.onrender.com/api/products/?search=${query}`)
       .then((res) => setProducts(res.data))
       .catch((err) => console.log(err))
       .finally(() => setLoading(false));

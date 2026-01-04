@@ -33,6 +33,8 @@ SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
 DEBUG = os.getenv("DEBUG")
 
 ALLOWED_HOSTS = [
+    "https://urbancart-ky8r.onrender.com",
+    "https://urbancartapp.netlify.app/",
     "localhost",
     "127.0.0.1",
     "0.0.0.0",
@@ -104,16 +106,18 @@ MIDDLEWARE = [
 
 # Allow sending cookies
 CORS_ALLOW_CREDENTIALS = True
-REACT_PORT = "5173"
+
 
 # Only allow cross-origin requests from these specific domains, and include credentials when they request them.
 CORS_ALLOWED_ORIGINS = [
-    f"http://localhost:{REACT_PORT}",
+    f"http://localhost:5173",
+    "https://urbancartapp.netlify.app.com",
 ]
 
 # is a security whitelist that defines which external domains are trusted to make POST, PUT, DELETE, or PATCH requests to your Django backend
 CSRF_TRUSTED_ORIGINS = [
-    f"http://localhost:{REACT_PORT}",
+    f"http://localhost:5173",
+    "https://urbancartapp.netlify.app.com",
 ]
 ROOT_URLCONF = "urbancart.urls"
 
@@ -172,7 +176,7 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
     {
-        "NAME": "core.password_validators.StrongPasswordValidator", 
+        "NAME": "core.password_validators.StrongPasswordValidator",
     },
 ]
 
