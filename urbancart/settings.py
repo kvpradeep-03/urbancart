@@ -32,13 +32,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG")
 
-ALLOWED_HOSTS = [
-    "https://urbancart-ky8r.onrender.com",
-    "https://urbancartapp.netlify.app/",
-    "localhost",
-    "127.0.0.1",
-    "0.0.0.0",
-]
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 
 # Application definition
