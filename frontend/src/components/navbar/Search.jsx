@@ -10,11 +10,8 @@ const SearchBar = styled("div")(({ theme }) => ({
   borderRadius: theme.shape.borderRadius,
   backgroundColor: alpha(theme.palette.common.white, 0.15),
   "&:hover": {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  "&:hover": {
   backgroundColor: alpha(theme.palette.common.white, 0.25),
-  border: "1px solid #555"
+  border: "2px solid #555"
 },
   marginRight: theme.spacing(2),
   marginLeft: 0,

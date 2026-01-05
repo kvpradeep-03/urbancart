@@ -175,8 +175,10 @@ class EmailLoginAPIView(TokenObtainPairView):
             key="access_token",
             value=str(access),
             httponly=True,
-            secure=False,  # use True in production (HTTPS)
-            samesite="Lax",
+            # cookie is only sent over HTTPS when in production and HTTP in local dev
+            secure=not settings.DEBUG,
+            # samesite attribute to control cross-site request behavior, Setted as None in prod and Lax in dev
+            samesite="None" if not settings.DEBUG else "Lax",
             max_age=int(timedelta(minutes=15).total_seconds()),
         )
 
@@ -184,8 +186,8 @@ class EmailLoginAPIView(TokenObtainPairView):
             key="refresh_token",
             value=str(refresh),
             httponly=True,
-            secure=False,
-            samesite="Lax",
+            secure=not settings.DEBUG,
+            samesite="None" if not settings.DEBUG else "Lax",
             max_age=int(timedelta(days=1).total_seconds()),
         )
 
@@ -238,8 +240,8 @@ class RefreshAPIView(TokenRefreshView):
             key="access_token",
             value=str(access_token),
             httponly=True,
-            secure=False,  # use True in production (HTTPS)
-            samesite="Lax",
+            secure=not settings.DEBUG,
+            samesite="None" if not settings.DEBUG else "Lax",
             max_age=int(timedelta(minutes=15).total_seconds()),
         )
 
@@ -247,8 +249,8 @@ class RefreshAPIView(TokenRefreshView):
             key="refresh_token",
             value=str(refresh_token),
             httponly=True,
-            secure=False,
-            samesite="Lax",
+            secure=not settings.DEBUG,
+            samesite="None" if not settings.DEBUG else "Lax",
             max_age=int(timedelta(days=1).total_seconds()),
         )
 

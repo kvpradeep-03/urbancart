@@ -80,16 +80,11 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const loginResponse = await api.post("api/auth/login/", payload, {
-        withCredentials: true,
-      });
-
+      const loginResponse = await api.post("/api/auth/login/", payload);
       // console.log("LOGIN RESPONSE: ", loginResponse);
 
       const userDetailsResponse = await api.get(
-        "api/auth/user/",
-        {},
-        { withCredentials: true }
+        "/api/auth/user/"
       );
       // console.log("User : ", userDetailsResponse);
 
