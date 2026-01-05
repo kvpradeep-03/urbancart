@@ -30,7 +30,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG")
+#DEBUG is True only when the env value is exactly "true" Anything else DEBUG is False
+#on prod evn DEBUG=False at default level
+#should export DEBUG=True while running local server
+DEBUG = os.getenv("DEBUG", "").lower() == "true" #if debug var is notsetted instead of None it takes "", for condentional checking here.
+
+if DEBUG:
+    # Localhost cookies
+    AUTH_COOKIE_SAMESITE = "Lax"
+    AUTH_COOKIE_SECURE = False
+else:
+    # Production cookies
+    AUTH_COOKIE_SAMESITE = "None"
+    AUTH_COOKIE_SECURE = True
+
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
@@ -79,9 +92,6 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),  # last for 1 day
     "ROTATE_REFRESH_TOKENS": True,  # New refresh token is issued on refresh (best practice)
     "BLACKLIST_AFTER_ROTATION": True,  # Old refresh token is instantly blacklisted
-    "AUTH_HEADER_TYPES": (
-        "Bearer",
-    ),  # Use 'Bearer <token>' in the Authorization header
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
 }
 

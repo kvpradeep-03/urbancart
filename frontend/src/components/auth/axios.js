@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "https://urbancartapp.netlify.app/";
+const BASE_URL = "https://urbancart-ky8r.onrender.com";
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
@@ -28,7 +28,7 @@ api.interceptors.response.use(
   async (error) => {
     // originalRequest contains the full config (method, headers, URL, body, etc.) of the failed request.
     const originalRequest = error.config;
-
+    // console.log("AXIOS INTERCEPTOR ERROR: ", originalRequest);
     // Skip refresh for these endpoints is these endpoint returns 401 due to unauthorized at initial req
     if (
       originalRequest.url.includes("api/auth/login/") ||
@@ -58,7 +58,7 @@ api.interceptors.response.use(
         .catch((err) => Promise.reject(err));
     }
 
-    // If multiple req raises at sametime when token is expired if first triggers refresh api
+    // If multiple req raises at sametime when token is expired it first triggers refresh api
     // while during refresh (isRefreshing = true) they wont call refresh endpoint again instead the requests are queued
     isRefreshing = true;
 
