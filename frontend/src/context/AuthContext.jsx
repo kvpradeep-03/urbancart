@@ -1,9 +1,4 @@
-import React, {
-  useState,
-  createContext,
-  useContext,
-  useEffect,
-} from "react";
+import React, { useState, createContext, useContext, useEffect } from "react";
 import api from "../components/auth/axios";
 import { useToast } from "../context/ToastContext";
 
@@ -12,7 +7,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const isAuthenticated = () => !!user;
+  const isAuthenticated = !!user;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -23,7 +18,7 @@ export const AuthProvider = ({ children }) => {
     const fetchUser = async () => {
       try {
         const response = await api.get(
-          "/api/auth/user/",
+          "/auth/user/",
           {},
           { withCredentials: true }
         );
@@ -44,7 +39,7 @@ export const AuthProvider = ({ children }) => {
   const userData = async () => {
     try {
       const response = await api.get(
-        "/api/auth/user/",
+        "/auth/user/",
         {},
         { withCredentials: true }
       );
@@ -57,7 +52,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const signupResponse = await api.post("/api/auth/register/", payload);
+      const signupResponse = await api.post("/auth/register/", payload);
       // console.log("SIGNUP RESPONSE: ", signupResponse);
       setLoading(false);
       return {
@@ -80,12 +75,10 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const loginResponse = await api.post("/api/auth/login/", payload);
+      const loginResponse = await api.post("/auth/login/", payload);
       // console.log("LOGIN RESPONSE: ", loginResponse);
 
-      const userDetailsResponse = await api.get(
-        "/api/auth/user/"
-      );
+      const userDetailsResponse = await api.get("auth/user/");
       // console.log("User : ", userDetailsResponse);
 
       setUser(userDetailsResponse.data);
@@ -114,7 +107,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoggingOut(true);
       await api.post(
-        "api/auth/logout/",
+        "/auth/logout/",
         {},
         {
           withCredentials: true,
@@ -133,7 +126,7 @@ export const AuthProvider = ({ children }) => {
     if (!user) return false;
     try {
       await api.delete(
-        "api/auth/delete-account/",
+        "/auth/delete-account/",
         {},
         {
           withCredentials: true,
@@ -149,11 +142,9 @@ export const AuthProvider = ({ children }) => {
 
   const editUserProfile = async (profileData) => {
     try {
-      const response = await api.patch(
-        "api/auth/editUserProfile/",
-        profileData,
-        { withCredentials: true }
-      );
+      const response = await api.patch("/auth/editUserProfile/", profileData, {
+        withCredentials: true,
+      });
       // Update user state with new editUserProfile endpoint data
       setUser((prev) => ({
         ...prev,

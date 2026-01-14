@@ -13,7 +13,7 @@ import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import { Link as RouterLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-
+import emptycart_illu from "../assets/emptycart_illu.svg"
 const EmptyCart = () => {
   const navigate = useNavigate();
   return (
@@ -41,7 +41,7 @@ const EmptyCart = () => {
         >
           <Box
             component="img"
-            src="../../public/emptycart_illu.svg"
+            src={emptycart_illu}
             alt="Empty cart"
             sx={{
               width: { xs: "80%", sm: "100%" },

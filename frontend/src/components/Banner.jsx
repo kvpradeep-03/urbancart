@@ -4,6 +4,9 @@ import Slider from "react-slick";
 import { Box, Typography } from "@mui/material";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import banner1 from "../assets/banner_img_1.webp";
+import banner2 from "../assets/banner_img_2.webp";
+import banner3 from "../assets/banner_img_3.webp";
 
 export default function Banner() {
   const settings = {
@@ -25,19 +28,19 @@ export default function Banner() {
   const banners = [
     {
       id: 1,
-      img: "../../public/banner_img_1.webp",
+      img: banner1,
       title: "Welcome to Our Store",
       subtitle: "Find the best products here",
     },
     {
       id: 2,
-      img: "../../public/banner_img_2.webp",
+      img: banner2,
       title: "Big Sale Today",
       subtitle: "Up to 50% off on selected items",
     },
     {
       id: 3,
-      img: "../../public/banner_img_3.webp",
+      img: banner3,
       title: "New Arrivals",
       subtitle: "Check out the latest trends",
     },

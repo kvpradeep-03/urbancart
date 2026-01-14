@@ -1,5 +1,6 @@
 import React from "react";
 import { Box, Typography, Button } from "@mui/material";
+import pleaseLogin_illu from "../assets/pleaseLogin_illu.png";
 
 const PleaseLogin = ({ onLoginClick }) => {
   return (
@@ -17,7 +18,7 @@ const PleaseLogin = ({ onLoginClick }) => {
       {/* Illustration */}
       <Box
         component="img"
-        src="/pleaseLogin_illu .png" // place the generated image here
+        src={pleaseLogin_illu} // place the generated image here
         alt="Please login"
         sx={{
           width: { xs: "80%", sm: "40%" },

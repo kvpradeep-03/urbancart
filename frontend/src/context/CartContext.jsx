@@ -26,18 +26,18 @@ export const CartProvider = ({ children }) => {
   });
 
   const toast = useToast();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   useEffect(() => {
-    if (user) {
+    if (isAuthenticated) {
       fetchCart();
     }
-  }, [user]);
+  }, [isAuthenticated]);
 
   const fetchCart = async () => {
     try {
       setLoading(true);
       const result = await api
-        .get("/api/cart/", { withCredentials: true })
+        .get("/cart/", { withCredentials: true })
         .finally(() => setLoading(false));
       setCart(result.data);
     } catch (err) {
@@ -49,23 +49,30 @@ export const CartProvider = ({ children }) => {
   };
   const addToCart = async (productId, size) => {
     try {
+      if (!isAuthenticated) {
+        toast.error("Please login to add items to cart");
+        return;
+      }
+      console.log(isAuthenticated);
       await api.post(
-        "/api/cart/add/",
+        "/cart/add/",
         {
           product_id: productId,
-          selected_size: size.id, // IMPORTANT
+          selected_size: size ? size.id : null,
         },
         { withCredentials: true }
       );
+      toast.success("Product added to cart!");
       fetchCart(); // Refresh cart UI
     } catch (err) {
+      console.error(err);
       toast.error("something went wrong, please try again");
     }
   };
 
   const incQty = async (itemId, currentQty) => {
     await api.post(
-      `/api/cart/update/${itemId}/`,
+      `/cart/update/${itemId}/`,
       {
         quantity: currentQty + 1,
       },
@@ -78,7 +85,7 @@ export const CartProvider = ({ children }) => {
   const decQty = async (itemId, currentQty) => {
     if (currentQty <= 1) return;
     await api.post(
-      `/api/cart/update/${itemId}/`,
+      `/cart/update/${itemId}/`,
       {
         quantity: currentQty - 1,
       },
@@ -89,7 +96,7 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeFromCart = async (itemId) => {
-    await api.delete(`/api/cart/remove/${itemId}/`, {
+    await api.delete(`/cart/remove/${itemId}/`, {
       withCredentials: true,
     });
     fetchCart();
@@ -97,7 +104,7 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = async () => {
     try {
-      await api.delete("/api/cart/clear/", { withCredentials: true });
+      await api.delete("/cart/clear/", { withCredentials: true });
       setCart([]); // clear local state after backend is cleared
       fetchCart();
       toast.success("Cart cleared successfully");
@@ -106,52 +113,47 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-const placeOrder = async (formData) => {
-  try {
-    const res = await api.post("/api/order/place/", formData, {
-      withCredentials: true,
-    });
-    setCart([]);
-    fetchCart();
-    toast.success("Your Order has been Placed Successfully, Thank you!");
-    return res;
-  } catch (err) {
-    const msg = err?.response?.data?.error || "Order failed";
-    toast.error(msg);
-   
-  }
-};
+  const placeOrder = async (formData) => {
+    try {
+      const res = await api.post("/order/place/", formData, {
+        withCredentials: true,
+      });
+      setCart([]);
+      fetchCart();
+      toast.success("Your Order has been Placed Successfully, Thank you!");
+      return res;
+    } catch (err) {
+      const msg = err?.response?.data?.error || "Order failed";
+      toast.error(msg);
+    }
+  };
 
+  const razorpayCreateOrder = async (formData) => {
+    try {
+      const res = await api.post("/payment/create-order/", formData, {
+        withCredentials: true,
+      });
+      return res;
+    } catch (err) {
+      const msg = err?.response?.data?.error || "Unable to create order";
+      toast.error(msg);
+    }
+  };
 
-const razorpayCreateOrder = async (formData) => {
-  try {
-    const res = await api.post("/api/payment/create-order/", formData, {
-      withCredentials: true,
-    });
-    return res;
-  } catch (err) {
-    const msg = err?.response?.data?.error || "Unable to create order";
-    toast.error(msg);
-  
-  }
-};
-
-
-const razorpayVerifyPayment = async (formData) => {
-  try {
-    const res = await api.post("/api/payment/verify/", formData, {
-      withCredentials: true,
-    });
-    setCart([]);
-    fetchCart();
-    return res;
-  } catch (err) {
-    const msg = err?.response?.data?.error || "Payment verification failed";
-    toast.error(msg);
-    throw err;
-  }
-};
-
+  const razorpayVerifyPayment = async (formData) => {
+    try {
+      const res = await api.post("/payment/verify/", formData, {
+        withCredentials: true,
+      });
+      setCart([]);
+      fetchCart();
+      return res;
+    } catch (err) {
+      const msg = err?.response?.data?.error || "Payment verification failed";
+      toast.error(msg);
+      throw err;
+    }
+  };
 
   // memoize the context value so consumers don't re-render unnecessarily
 

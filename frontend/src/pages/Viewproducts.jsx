@@ -56,8 +56,13 @@ export default function Viewproducts() {
   // for similar products
   useEffect(() => {
     axios
-      .get("https://urbancart-ky8r.onrender.com/api/products")
-      .then((result) => setProducts(result.data))
+      .get("/api/products")
+      .then((result) => {
+        // If result.data is an array, use it.
+        // If it's a single object, wraps it in [].
+        const data = Array.isArray(result.data) ? result.data : [result.data];
+        setProducts(data);
+      })
       .catch((error) => console.log(error));
   }, []);
 
@@ -67,7 +72,7 @@ export default function Viewproducts() {
     setError(null);
 
     axios
-      .get(`https://urbancart-ky8r.onrender.com/api/products/${slug}/`)
+      .get(`/api/products/${slug}/`)
       .then((res) => {
         setProduct(res.data);
       })
@@ -78,8 +83,6 @@ export default function Viewproducts() {
       .finally(() => setLoading(false));
   }, [slug]);
 
-  // derive sizes from product AFTER product is set
-  const sizesArray = product?.size ? product.size.split(" ") : [];
   // console.log(selectedSize);
 
   // Custom Arrows for the slider
@@ -154,18 +157,19 @@ export default function Viewproducts() {
           }}
         >
           <Slider {...settings}>
-            {product.images.map((img) => (
-              <Box
-                key={img.id}
-                sx={{
-                  height: { xs: "300px", sm: "300px", md: "500px" },
-                  backgroundImage: `url(${img.image})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  borderRadius: 2,
-                }}
-              />
-            ))}
+            {Array.isArray(product.images) &&
+              product.images.map((url, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    height: { xs: "300px", sm: "300px", md: "500px" },
+                    backgroundImage: `url(${url})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    borderRadius: 2,
+                  }}
+                />
+              ))}
           </Slider>
         </Box>
 
@@ -300,17 +304,14 @@ export default function Viewproducts() {
                 bgcolor: "#141514",
               }}
               onClick={() => {
-                const size = selectedSize[product.id];
-                // console.log("selectedSize: ", selectedSize);
-                // console.log("size: ", size)
-                if (!selectedSize[product.id]) {
+                const size = selectedSize[product.id] ?? null;
+                // If product has sizes available but user hasn't selected one, show error
+                if (product.sizes && product.sizes.length > 0 && !size) {
                   toast.error("Please select a size before adding to cart.");
                   return;
                 }
+                // If no sizes are available, proceed passing null so addToCart can handle it
                 addToCart(product.id, size);
-                inCart
-                  ? toast.success("Added one more product!")
-                  : toast.success("Product added to cart!");
               }}
             >
               {inCart ? "Add one more" : "Add to cart"}
@@ -516,108 +517,6 @@ export default function Viewproducts() {
         </Box>
       </Stack>
 
-      <Divider sx={{ mt: { sm: "6vw", xs: "16vw" } }}>
-        <Typography
-          variant="h4"
-          color="#3e4152"
-          sx={{
-            fontWeight: 300,
-            fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2rem" },
-          }}
-        >
-          Similar Products
-        </Typography>
-      </Divider>
-
-      {/* // Similar Products Section */}
-      <Box sx={{ flexGrow: 1, p: { xs: 0, sm: 2 }, mt: 3, mb: 6 }}>
-        <Grid
-          container
-          spacing={{ xs: 0, sm: 2, lg: 2 }}
-          justifyContent="center"
-        >
-          {products.map((product) => (
-            <Grid
-              size={{ xs: 6, sm: 6, lg: 3 }}
-              key={product.id}
-              sx={{ px: { xs: 0, sm: 1 } }}
-            >
-              <Card sx={{ Width: "100%" }}>
-                <CardActionArea
-                  component={Link}
-                  to={`/product/${product.slug}`}
-                >
-                  <CardMedia
-                    component="img"
-                    height="280"
-                    image={product.thumbnail}
-                    alt={product.name}
-                    sx={{ objectFit: "cover", width: "100%" }}
-                  />
-                  <CardContent>
-                    <Typography gutterBottom variant="h6" component="div">
-                      {product.name}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "text.secondary" }}
-                    >
-                      {product.description.length > 60
-                        ? product.description.slice(0, 60) + "..."
-                        : product.description}
-                    </Typography>
-
-                    {/* Price Section */}
-                    <Box
-                      sx={{
-                        mt: 1,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                      }}
-                    >
-                      {/* Discounted Price */}
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          fontSize: { xs: "10px", md: "12px", lg: "16px" },
-                          fontWeight: 500,
-                        }}
-                      >
-                        Rs. {product.discount_price}
-                      </Typography>
-
-                      {/* Original Price with strikethrough */}
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          textDecoration: "line-through",
-                          color: "text.secondary",
-                          fontSize: { xs: "10px", md: "12px", lg: "16px" },
-                        }}
-                      >
-                        Rs. {product.original_price}
-                      </Typography>
-
-                      {/* Discount info */}
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: "error.main",
-                          fontSize: { xs: "10px", md: "12px", lg: "16px" },
-                          fontWeight: "small",
-                        }}
-                      >
-                        ({product.discount_percentage}% OFF)
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
     </>
   );
 }

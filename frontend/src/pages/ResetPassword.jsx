@@ -49,7 +49,7 @@ const ResetPassword = () => {
     try {
       setLoading(true);
       const res = await axios.post(
-        "http://127.0.0.1:8000/api/auth/reset-password/confirm/",
+        "/api/auth/reset-password/confirm/",
         {
           uid,
           token,

@@ -22,7 +22,6 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -30,9 +29,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG is True only when the env value is exactly "true" Anything else DEBUG is False
-#on prod evn DEBUG=False at default level
-#should export DEBUG=True while running local server
+# DEBUG is True only when the env value is exactly "true" Anything else DEBUG is False
+# on prod evn DEBUG=False at default level
+# should export DEBUG=True while running local server
 DEBUG = os.getenv("DEBUG", "").lower() == "true" #if debug var is notsetted instead of None it takes "", for condentional checking here.
 
 if DEBUG:
@@ -80,7 +79,7 @@ DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "core.authentication.CookieJWTAuthentication",
+        "core.utils.authentication.CookieJWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -114,21 +113,25 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Only allow cross-origin requests from these specific domains, and include credentials when they request them.
 CORS_ALLOWED_ORIGINS = [
-    f"http://localhost:5173",
-    "https://urbancartapp.netlify.app.com",
+    "http://127.0.0.1:8000",
+    "https://urbancart-ky8r.onrender.com",
 ]
+
 
 # is a security whitelist that defines which external domains are trusted to make POST, PUT, DELETE, or PATCH requests to your Django backend
 CSRF_TRUSTED_ORIGINS = [
-    f"http://localhost:5173",
-    "https://urbancartapp.netlify.app.com",
+    "http://127.0.0.1:8000",
+    "https://urbancart-ky8r.onrender.com",
 ]
+
 ROOT_URLCONF = "urbancart.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            BASE_DIR / "frontend" / "dist"
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -180,7 +183,7 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
     {
-        "NAME": "core.password_validators.StrongPasswordValidator",
+        "NAME": "core.utils.password_validators.StrongPasswordValidator",
     },
 ]
 
@@ -204,6 +207,14 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Tell Django to look for static files in the frontend build assets directory
+STATICFILES_DIRS = [
+    BASE_DIR / "frontend" / "dist",
+]
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
