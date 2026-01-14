@@ -1,5 +1,5 @@
 import { Box, Typography, Button } from "@mui/material";
-
+import norders_illu from "../assets/noorders_illu.png";
 const NoOrders = () => {
   return (
     <Box
@@ -10,7 +10,7 @@ const NoOrders = () => {
     >
       <Box
         component="img"
-        src="../../public/noorders_illu.png"
+        src={norders_illu}
         alt="Empty cart"
         sx={{
           width: { xs: "60%", sm: "40%" },

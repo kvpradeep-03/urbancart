@@ -1,15 +1,9 @@
 from rest_framework import serializers
-from .models import Product, ProductImage, CartItem, Cart, OrderItem, Order, ProductSize
-
+from .models import Product,ProductImage, CartItem, Cart, OrderItem, Order, ProductSize
+from app.utils.cloudinary_helpers import build_cloudinary_url
 
 # serializers to convert your model data into JSON (and vice versa)
 # It also validates incoming JSON and converts it back into model objects.
-class ProductImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductImage
-        fields = ("id", "image")  # DRF will return the image URL
-
-
 class ProductSizeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductSize
@@ -24,13 +18,10 @@ class ProductSerializers(serializers.ModelSerializer):
     # SerializerMethodField tells DRF: "Call a method named get_<fieldname>()"
     # whenever this field is serialized like this.
     discount_amount = serializers.SerializerMethodField()
-    thumbnail = serializers.ImageField(
-        read_only=True
-    )  # ImageField automatically uses thumbnail.url form cloudinary database( django knows how to get url from cloudinary storage )
-    # many=True because a product can have multiple images
-    # read_only=True means this nested field is included in responses but not expected/used for creating/updating via the same serializer (to support writes you’d need custom create/update logic).
-    images = ProductImageSerializer(many=True, read_only=True)  # related_name="images"
+    images = serializers.SerializerMethodField()
+    thumbnail = serializers.SerializerMethodField()
     sizes = ProductSizeSerializer(many=True)
+
     class Meta:
         # Tells it which model to serialize.
         model = Product
@@ -51,12 +42,18 @@ class ProductSerializers(serializers.ModelSerializer):
             "images",
         ]
 
-    # When DRF serializes an object, it sees "discount_amount" is a
-    # SerializerMethodField. By convention, it looks for:
-    #   def get_discount_amount(self, obj)
-    # and calls it automatically, passing in the current Product instance.
-    #
-    # You never call this yourself. DRF does it when you call serializer.data.
+    def get_thumbnail(self, obj):
+        """
+        obj.thumbnail is a CloudinaryField and this pass a field instance to _cloudinary_url
+        """
+        return build_cloudinary_url(obj.thumbnail)
+
+    def get_images(self, obj):
+        """
+        obj.images is a RelatedManager and this pass a field instance to _cloudinary_url
+        We must call .all() to get ProductImage objects
+        """
+        return [build_cloudinary_url(image_obj.image) for image_obj in obj.images.all()]
 
     def get_discount_amount(self, obj):
         # "obj" here is a single Product instance.
@@ -75,24 +72,12 @@ class CartItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartItem
         fields = ["id", "product","selected_size", "quantity", "total_price"]
-    # class CartItemSerializer(serializers.ModelSerializer):
-    # DRF, When serializing this field, call a method named get_<fiels_name>(self, obj).
-    product = serializers.SerializerMethodField()
-    selected_size = serializers.SerializerMethodField()
-    total_price = serializers.SerializerMethodField()
 
-    class Meta:
-        model = CartItem
-        fields = ["id", "product", "selected_size", "quantity", "total_price"]
-    # get_product method looks up the related Product instance using the ForeignKey relationship.
-    # The ForeignKey relationship allows us to access the related Product object directly from the CartItem instance.
     def get_product(self, obj):
-        request = self.context.get("request")
-        #to preven race condition when building absolute uri at login time
-        if request:
-            thumbnail_url = request.build_absolute_uri(obj.product.thumbnail.url)
-        else:
-            thumbnail_url = obj.product.thumbnail.url  # fallback relative path
+        product_obj = obj.product
+
+        thumbnail_url = build_cloudinary_url(product_obj.thumbnail)
+            
         return {
             "id": obj.product.id,
             "name": obj.product.name,
@@ -104,6 +89,9 @@ class CartItemSerializer(serializers.ModelSerializer):
         }
 
     def get_selected_size(self, obj):
+        if not obj.selected_size:
+            return None
+        
         return obj.selected_size.size.size  # "S", "M", "L", or "10", "11"
 
     # In cartItem model defined a method get_total_price that calculates total price based on quantity and product's discount price
@@ -118,6 +106,7 @@ class CartSerializer(serializers.ModelSerializer):
     total_mrp = serializers.SerializerMethodField()
     total_discount = serializers.SerializerMethodField()
     total_price = serializers.SerializerMethodField()
+
     class Meta:
         model = Cart
         fields = [
@@ -128,7 +117,6 @@ class CartSerializer(serializers.ModelSerializer):
             "total_discount",
             "total_price",
         ]
-
 
     def get_total_items(self, obj):
         return sum(item.quantity for item in obj.items.all())
@@ -144,14 +132,30 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    product = ProductSerializers(read_only=True)
+    product = serializers.SerializerMethodField()
+    
+    def get_product(self, obj):
+        if obj.product.thumbnail:
+            thumbnail_url = build_cloudinary_url(obj.product.thumbnail)
+        
+        return {
+            "id": obj.product.id,
+            "name": obj.product.name,
+            "description": obj.product.description,
+            "thumbnail": thumbnail_url,
+            "discount_percentage": obj.product.discount_percentage,
+            "discount_price": obj.product.discount_price,
+            "original_price": obj.product.original_price,
+        }
+
     class Meta:
         model = OrderItem
-        fields = ["id", "product", "quantity", "price"]
+        fields = ["id", "product", "quantity", "size", "price"]
 
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
+
     class Meta:
         model = Order
         fields = ["id", "order_id", "order_date", "status", "total_amount", "items"]
@@ -162,10 +166,10 @@ class ProductInOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ["product", "quantity", "price", "thumbnail"]
+        fields = ["product", "quantity", "price", "size", "thumbnail"]
 
     def get_thumbnail(self, obj):
-        return obj.product.thumbnail.url
+        return build_cloudinary_url(obj.product.thumbnail)
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):
@@ -186,7 +190,6 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "address",
             "items",
         ]
-
 
     def get_address(self, obj):
         return {
@@ -216,6 +219,6 @@ class CreateProductSerializer(serializers.ModelSerializer):
             "thumbnail",
             "original_price",
             "discount_percentage",
-            #images are get stored by views.py
-            #id,slug, discount_price are auto generated fields so we dont need to pass them
+            # images are get stored by views.py
+            # id,slug, discount_price are auto generated fields so we dont need to pass them
         ]

@@ -1,17 +1,18 @@
 import os
 from ..models import Cart, Order, OrderItem
+from django.conf import settings
 from ..serializers import Product,ProductImage,CreateProductSerializer
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from core.authentication import CookieJWTAuthentication
+from core.utils.authentication import CookieJWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import (
     get_object_or_404,
 )
-from core.permissions import IsAdmin
+from core.utils.permissions import IsAdmin
 from django.db.models import Sum
 import pytz
 
@@ -94,7 +95,7 @@ class UpdateOrderStatus(APIView):
                 "[[OLD_STATUS]]": old_status,
                 "[[NEW_STATUS]]": new_status,
                 "[[ORDER_DATE]]": order.order_date.strftime("%d-%m-%Y %I:%M %p"),
-                "[[TRACKING_URL]]": f"https://urbancartapp.netlify.app/{order.order_id}",
+                "[[TRACKING_URL]]": f"{settings.SITE_URL}/{order.order_id}",
             }
 
             for placeholder, value in replacements.items():

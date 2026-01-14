@@ -22,7 +22,7 @@ from .models import CustomUser
 from app.serializers import CartSerializer, OrderSerializer
 from app.models import Cart, Order
 from django.conf import settings
-from .authentication import CookieJWTAuthentication
+from core.utils.authentication import CookieJWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -80,7 +80,8 @@ class UserRegistrationAPIView(APIView):
                     html_template = f.read()
                 replacements = {
                     # [[params]] using double square brackets to avoid conflicts with other templating syntaxes
-                    "[[USER_NAME]]": user.username
+                    "[[USER_NAME]]": user.username,
+                    "[[SITE_URL]]": settings.SITE_URL
                 }
 
                 for placeholder, value in replacements.items():
@@ -433,7 +434,7 @@ class DeleteAccountAPIView(APIView):
             email_response = api_instance.send_transac_email(email_content)
 
             # Extract a simple serializable piece of data, like the message ID, OR a simple success message.
-            email_status_message = f"Welcome email sent successfully. Message ID: {getattr(email_response, 'message_id', 'N/A')}"
+            email_status_message = f"Account closure email sent successfully. Message ID: {getattr(email_response, 'message_id', 'N/A')}"
         except FileNotFoundError:
             return Response(
                 {f"Error: Email Templates file not found at {template_path}"}
@@ -486,7 +487,7 @@ class PasswordResetRequestAPIView(APIView):
 
                 replacements = {
                     "[[USER_NAME]]": user.username,
-                    "[[RESET_LINK]]": f"https://urbancartapp.netlify.app/reset-password/{uid}/{token}/",
+                    "[[RESET_LINK]]": f"{settings.SITE_URL}/reset-password/{uid}/{token}/",
                 }
                 for placeholder, value in replacements.items():
                     if value is not None:

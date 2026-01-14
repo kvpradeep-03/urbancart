@@ -22,7 +22,7 @@ const OrderSuccess = () => {
 
   const fetchOrderDetails = async () => {
     try {
-      const res = await api.get(`api/order/details/${orderId}/`);
+      const res = await api.get(`/order/details/${orderId}/`);
       setOrder(res.data);
     } catch (error) {
       console.log(error);
@@ -122,7 +122,7 @@ const OrderSuccess = () => {
           >
             <Grid item xs={6}>
               <img
-                src={`http://127.0.0.1:8000${item.thumbnail}`}
+                src={item.thumbnail}
                 style={{
                   width: 60,
                   height: 60,
@@ -142,7 +142,7 @@ const OrderSuccess = () => {
 
         <Divider sx={{ my: 2 }} />
 
-        <Grid container>
+        <Grid container sx={{mr:2}}>
           <Grid item xs={6}>
             <Typography fontWeight="bold">Total:</Typography>
           </Grid>

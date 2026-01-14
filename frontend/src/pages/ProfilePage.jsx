@@ -59,18 +59,15 @@ export default function ProfilePage({ setShowLogin }) {
     address: "",
   });
 
-  // If authenticated but missing nested data
-  if (!user || !user.user) {
-    return <ProfileSkeleton />;
-  }
 
-  // Loading Skeleton
-  if (loading) {
-    return <ProfileSkeleton />;
-  }
-
-  if (!isAuthenticated()) {
+  // If authenticated but missing user data
+  if (!isAuthenticated) {
     return <PleaseLogin onLoginClick={() => setShowLogin(true)} />;
+  }
+
+  // Authenticated but user data still loading -> show skeleton
+  if (loading || !user?.user) {
+    return <ProfileSkeleton />;
   }
 
   // Status Color Handler
@@ -242,13 +239,16 @@ export default function ProfilePage({ setShowLogin }) {
                       primary={item.product.name}
                       secondary={
                         <>
-                          <Typography component="span" variant="body2">
+                          <Typography component="span" variant="body2" mr={1}>
                             Price: ₹{item.price}
                           </Typography>
-                          <Typography
-                            component="span"
-                            variant="body2"
-                          >
+                          {item.size ? (
+                            <Typography component="span" variant="body2" mr={1}>
+                              Size: {item.size}
+                            </Typography>
+                          ) : null}
+
+                          <Typography component="span" variant="body2">
                             Qty: {item.quantity}
                           </Typography>
                         </>
@@ -259,7 +259,12 @@ export default function ProfilePage({ setShowLogin }) {
               </List>
 
               <Divider sx={{ my: 2 }} />
-              <Typography>Total: ₹{order.total_amount}</Typography>
+
+              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                <Typography fontWeight="bold">
+                  Total: ₹{order.total_amount}
+                </Typography>
+              </Box>
             </CardContent>
           </Card>
         ))

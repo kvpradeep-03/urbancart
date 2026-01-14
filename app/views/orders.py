@@ -14,11 +14,12 @@ from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from core.authentication import CookieJWTAuthentication
+from core.utils.authentication import CookieJWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import (
     get_object_or_404,
 )
+from app.utils.cloudinary_helpers import build_cloudinary_url
 from django.db.models import Q
 # brevo email service api
 import brevo_python
@@ -94,6 +95,7 @@ class PlaceOrder(APIView):
                     order=order,
                     product=item.product,
                     quantity=item.quantity,
+                    size=item.selected_size if item.selected_size else None,
                     price=price,
                 )
                 total_amount += price * item.quantity
@@ -113,7 +115,7 @@ class PlaceOrder(APIView):
             # Build ORDER_ITEMS_LOOP HTML
             items_html = ""
             for item in order.items.all():
-                img_url = request.build_absolute_uri(item.product.thumbnail.url)
+                img_url = build_cloudinary_url(item.product.thumbnail.url)
                 item_block = f"""
                 <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;">
                     <tr>
@@ -319,6 +321,7 @@ class VerifyRazorpayPayment(APIView):
                     order=order,
                     product=item.product,
                     quantity=item.quantity,
+                    size=item.selected_size if item.selected_size else None,
                     price=item.product.discount_price,
                 )
 
@@ -334,7 +337,7 @@ class VerifyRazorpayPayment(APIView):
             # Build ORDER_ITEMS_LOOP HTML
             items_html = ""
             for item in order.items.all():
-                img_url = request.build_absolute_uri(item.product.thumbnail.url)
+                img_url = build_cloudinary_url(item.product.thumbnail.url)
                 item_block = f"""
                 <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;">
                     <tr>

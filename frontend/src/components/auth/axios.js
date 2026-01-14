@@ -1,8 +1,8 @@
 import axios from "axios";
 
-const BASE_URL = "https://urbancart-ky8r.onrender.com";
+// backend api baseURL is /api/ {api endpoint} and anything outside /api/ is served by frontend
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: "/api",
   withCredentials: true,
 });
 
@@ -63,11 +63,7 @@ api.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      await axios.post(
-        `${BASE_URL}/api/auth/refresh/`,
-        {},
-        { withCredentials: true }
-      );
+      await axios.post("/api/auth/refresh/", {}, { withCredentials: true });
       isRefreshing = false;
       processQueue(null);
       return api(originalRequest);

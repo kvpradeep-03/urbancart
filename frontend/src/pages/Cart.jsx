@@ -46,7 +46,7 @@ const Cart = ({ setShowLogin }) => {
   const [open, setOpen] = useState(false);
   // console.log("cart items:", cart);
 
-  if (!isAuthenticated()) {
+  if (!isAuthenticated) {
     return <PleaseLogin onLoginClick={() => setShowLogin(true)} />;
   }
 
@@ -81,7 +81,6 @@ const Cart = ({ setShowLogin }) => {
               border: "1px solid #ccc",
               cursor: "pointer",
             }}
-            onClick={() => navigate(`/product/${item.slug}`)}
           >
             <CardMedia
               component="img"
@@ -101,13 +100,16 @@ const Cart = ({ setShowLogin }) => {
                 >
                   {item.product.description}
                 </Typography>
-                <Typography
-                  variant="subtitle1"
-                  component="div"
-                  sx={{ color: "text.secondary" }}
-                >
-                  size: {item.selected_size.toUpperCase()} qty: {item.quantity}
-                </Typography>
+                {item.selected_size && (
+                  <Typography
+                    variant="subtitle1"
+                    component="div"
+                    sx={{ color: "text.secondary" }}
+                  >
+                    size: {item.selected_size.toUpperCase()} qty:{" "}
+                    {item.quantity}
+                  </Typography>
+                )}
 
                 <Box
                   sx={{
