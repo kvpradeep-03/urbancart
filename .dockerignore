@@ -12,8 +12,6 @@ venv/
 
 # Node / frontend
 node_modules/
-frontend/
-build/
 
 # env files
 .env
