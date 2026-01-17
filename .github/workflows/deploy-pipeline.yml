@@ -34,7 +34,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: pradeepkv/urbancart:latest
+          tags: pradeep313/urbancart:latest
       # Trigger Render Deployment using renders deploy hook stored in GitHub Secrets
       - name: Trigger Render Deployment
         run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
