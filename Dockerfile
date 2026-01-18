@@ -52,7 +52,7 @@ WORKDIR /app
 # Runtime deps only (mysql client lib, no gcc)
 # We install mariadb client library as mysqlclient python package due to comatibility issue with python:3.11-slim (based on Debian trixie)
 RUN apt-get update && apt-get install -y \
-    libmariadb3 \ 
+    libmariadb3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy installed python packages 
@@ -68,9 +68,12 @@ COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 # collect static files (moves everything into /staticfiles)
 RUN python manage.py collectstatic --noinput
 
+#Render defaults to port 10000 for Docker Image mode
+EXPOSE 10000
+
 # Starting the container with gunicorn
 # Here $PORT is a runtime variable provided by Render, it dynamically assigns a port for the web service.
 # while to spinup the container locally we have to supply the $PORT as a env variable, docker run -p 8000:8000 -e PORT=8000 --env-file .env urbancart:dev
-
+# sh allows to use shell features like variable substitution. and -c allows us to pass the entire command as a single string.
 CMD ["sh", "-c", "gunicorn urbancart.wsgi:application --bind 0.0.0.0:$PORT"]
 
