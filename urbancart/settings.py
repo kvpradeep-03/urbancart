@@ -114,14 +114,14 @@ CORS_ALLOW_CREDENTIALS = True
 # Only allow cross-origin requests from these specific domains, and include credentials when they request them.
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
-    "https://urbancart-ky8r.onrender.com",
+    "https://urbancart-w92a.onrender.com",
 ]
 
 
 # is a security whitelist that defines which external domains are trusted to make POST, PUT, DELETE, or PATCH requests to your Django backend
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
-    "https://urbancart-ky8r.onrender.com",
+    "https://urbancart-w92a.onrender.com",
 ]
 
 ROOT_URLCONF = "urbancart.urls"
