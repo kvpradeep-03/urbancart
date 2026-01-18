@@ -68,8 +68,9 @@ COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 # collect static files (moves everything into /staticfiles)
 RUN python manage.py collectstatic --noinput
 
-
-EXPOSE 8000
-
 # Starting the container with gunicorn
-CMD ["gunicorn", "urbancart.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Here $PORT is a runtime variable provided by Render, it dynamically assigns a port for the web service.
+# while to spinup the container locally we have to supply the $PORT as a env variable, docker run -p 8000:8000 -e PORT=8000 --env-file .env urbancart:dev
+
+CMD ["sh", "-c", "gunicorn urbancart.wsgi:application --bind 0.0.0.0:$PORT"]
+
