@@ -2,18 +2,21 @@ from ..models import Product, ProductImage
 from ..serializers import (
     ProductSerializers,
 )
-from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.db.models import Q
 
-class Products(APIView):
+
+class Products(ListAPIView):
+    # ListAPIView is used to retrive datas in
     permission_classes = [AllowAny]
+    serializer_class = ProductSerializers
 
-    def get(self, request):
+    def get_queryset(self):
         # gets multipe category from query params as a list like, /api/products/?category=t-shirts&category=jeanscategory=shoes&category=clothes to --> categories = ["t-shirts", "jeans"]
-
+        request = self.request
         categories = request.query_params.getlist("category")
         categories = [c.lower() for c in categories]  # normalize to match DB
         price = request.query_params.get("price")
@@ -50,10 +53,10 @@ class Products(APIView):
             except (ValueError, TypeError):
                 pass  # Ignore invalid discount values
 
-        serializer = ProductSerializers(
-            products, many=True, context={"request": request}
-        )
-        return Response(serializer.data)
+        # serializer = ProductSerializers(
+        #     products, many=True, context={"request": request}
+        # )
+        return products
 
 
 class ViewProducts(RetrieveAPIView):

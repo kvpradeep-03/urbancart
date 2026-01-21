@@ -12,8 +12,8 @@ import {
   Card,
   CardMedia,
   Grid,
-  ButtonGroup,
   Button,
+  Badge,
 } from "@mui/material";
 import CardContent from "@mui/material/CardContent";
 import CardActionArea from "@mui/material/CardActionArea";
@@ -24,17 +24,23 @@ import FilterListIcon from "@mui/icons-material/FilterList"; // Filter icon
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline"; // Clear All icon
 import Drawer from "@mui/material/Drawer";
 import ProductListSkeleton from "../components/skeletons/ProductsSkeleton";
+import Pagination from "@mui/material/Pagination";
 
 const Products = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   });
+  const [page, setPage] = useState(1);
+  const [count, setCount] = useState(1);
   const [products, setProducts] = useState([]);
   const [discount, setDiscount] = useState([]);
   const [loading, setLoading] = useState(true);
   //toggles between showing just 5 categories vs showing all
   const [showAll, setShowAll] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+
+  //to indicate if any filter is active
+  const [filterIsActive, setFilterIsActive] = useState(false);
 
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
@@ -44,7 +50,7 @@ const Products = () => {
   const searchTerm = queryParams.get("search") || "";
 
   const [selectedCategories, setSelectedCategories] = useState(
-    categoryFromUrl ? [categoryFromUrl] : []
+    categoryFromUrl ? [categoryFromUrl] : [],
   );
 
   const [searchQuery, setSearchQuery] = useState(searchTerm);
@@ -52,8 +58,6 @@ const Products = () => {
   useEffect(() => {
     setSearchQuery(searchTerm);
   }, [searchTerm]);
-
-  // console.log("categoryFromUrl: ", categoryFromUrl);
 
   //price slider
   const MAX = 10000;
@@ -79,78 +83,61 @@ const Products = () => {
     ? Categories
     : Categories.slice(0, visibleCount);
 
-  useEffect(() => {
-    if (!categoryFromUrl) {
-      fetchAllProducts(); // only fetch all if no category preselected
-    }
-  }, [categoryFromUrl]);
-
-  const fetchAllProducts = () => {
+  //fetch all products
+  const fetchProducts = async (pageNumber) => {
     setLoading(true);
-    axios
-      .get("/api/products/")
-      .then((res) => setProducts(res.data))
-      .catch((err) => console.log(err))
-      .finally(() => setLoading(false));
-  };
 
-  const fetchFilteredProducts = () => {
-    setLoading(true);
     const params = new URLSearchParams();
 
+    //includes pagination
+    params.append("page", pageNumber);
+
+    //filters
     selectedCategories.forEach((cat) => params.append("category", cat));
     discount.forEach((d) => params.append("discount", d));
-
-    if (val !== MIN) params.append("price", val);
-
-    axios
-      .get(
-        `/api/products/?${params.toString()}`
-      )
-      .then((res) => setProducts(res.data))
-      .catch((err) => console.log(err))
-      .finally(() => setLoading(false));
-  };
-
-  // Trigger API whenever filters change
-  useEffect(() => {
-    const noFilters =
-      selectedCategories.length === 0 && discount.length === 0 && val === MIN;
-
-    if (noFilters) {
-      fetchAllProducts();
-    } else {
-      fetchFilteredProducts();
-    }
-  }, [selectedCategories, val, discount, categoryFromUrl]);
-
-  //search functionality
-  const fetchSearchResults = (query) => {
-    setLoading(true);
-    axios
-      .get(`/api/products/?search=${query}`)
-      .then((res) => setProducts(res.data))
-      .catch((err) => console.log(err))
-      .finally(() => setLoading(false));
-  };
-  useEffect(() => {
-    if (searchQuery.trim() !== "") {
-      fetchSearchResults(searchQuery);
-      return;
+    if (val !== MIN) {
+      params.append("price", val);
     }
 
-    const noFilters =
-      selectedCategories.length === 0 && discount.length === 0 && val === MIN;
+    //search
+    if (searchQuery.trim()) {
+      params.append("search", searchQuery);
+    }
 
-    if (noFilters) fetchAllProducts();
-    else fetchFilteredProducts();
+    try {
+      const res = await axios.get(`/api/products/?${params.toString()}`);
+      setProducts(res.data.results);
+      setCount(Math.ceil(res.data.count / 12));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts(page);
+  }, [page, selectedCategories, discount, searchQuery]);
+  
+  useEffect(() => {
+    const active =
+      selectedCategories.length > 0 ||
+      discount.length > 0 ||
+      val !== MIN ||
+      searchQuery.trim() !== "";
+
+    setFilterIsActive(active);
   }, [selectedCategories, discount, val, searchQuery]);
+
+  //sets page number for pagination
+  const handlePageChange = (value) => {
+    setPage(value);
+  };
 
   // CLEAR FILTERS
   const clearFilters = () => {
     setSelectedCategories([]);
     setDiscount([]);
     setVal(MIN);
+    setFilterIsActive(false);
   };
 
   const handleToggle = (event) => {
@@ -159,10 +146,9 @@ const Products = () => {
       (prev) =>
         prev.includes(value)
           ? prev.filter((cat) => cat !== value) // remove if already selected
-          : [...prev, value] // add if not selected
+          : [...prev, value], // add if not selected
     );
   };
-  // console.log("selectedCategories: ", selectedCategories);
 
   //Discount range
 
@@ -173,9 +159,10 @@ const Products = () => {
       (prev) =>
         prev.includes(value)
           ? prev.filter((discountVal) => discountVal !== value) // remove if already selected
-          : [...prev, value] // add if not selected
+          : [...prev, value], // add if not selected
     );
   };
+
   if (loading) {
     return <ProductListSkeleton />;
   }
@@ -272,9 +259,38 @@ const Products = () => {
           </Typography>
         )}
         <Divider sx={{ my: 2 }} />
-        <Typography variant="h6" sx={{ mb: 1, fontWeight: 400 }}>
-          Price
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography variant="h6" sx={{ mb: 1, fontWeight: 400 }}>
+            Price
+          </Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            sx={{
+              borderColor: "#212020",
+              color: "#212020",
+              textTransform: "none",
+              fontWeight: 500,
+              transition: "0.2s ease",
+
+              "&:hover": {
+                backgroundColor: "#212020",
+                color: "#fff",
+                borderColor: "#212020",
+              },
+            }}
+            onClick={() => fetchProducts(page)}
+          >
+            Apply
+          </Button>
+        </Box>
+
         <Box>
           <Slider
             marks={marks}
@@ -369,7 +385,14 @@ const Products = () => {
               }}
               onClick={() => setFilterOpen(true)} // if you have a drawer/panel
             >
-              <FilterListIcon sx={{ fontSize: 20, color: "#444" }} />
+              {filterIsActive ? (
+                <Badge color="error" variant="dot">
+                  <FilterListIcon sx={{ fontSize: 20, color: "#444" }} />
+                </Badge>
+              ) : (
+                <FilterListIcon sx={{ fontSize: 20, color: "#444" }} />
+              )}
+
               <Typography sx={{ fontSize: 15, fontWeight: 500 }}>
                 Filter
               </Typography>
@@ -399,6 +422,7 @@ const Products = () => {
             </Grid>
           </Grid>
         </Box>
+
         {/* filter for mobile view */}
         <Drawer
           anchor="left"
@@ -416,6 +440,7 @@ const Products = () => {
               <Typography variant="h6" sx={{ mb: 1, fontWeight: 400 }}>
                 Filters
               </Typography>
+
               <Typography
                 variant="h6"
                 sx={{
@@ -480,9 +505,38 @@ const Products = () => {
               </Typography>
             )}
             <Divider sx={{ my: 2 }} />
-            <Typography variant="h6" sx={{ mb: 1, fontWeight: 400 }}>
-              Price
-            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 400 }}>
+                Price
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{
+                  borderColor: "#212020",
+                  color: "#212020",
+                  textTransform: "none",
+                  fontWeight: 500,
+                  transition: "0.2s ease",
+
+                  "&:hover": {
+                    backgroundColor: "#212020",
+                    color: "#fff",
+                    borderColor: "#212020",
+                  },
+                }}
+                onClick={() => fetchProducts(page)}
+              >
+                Apply
+              </Button>
+            </Box>
+
             <Box>
               <Slider
                 marks={marks}
@@ -643,6 +697,21 @@ const Products = () => {
               </Grid>
             ))}
           </Grid>
+        </Box>
+
+        <Box sx={{ mb: 4, display: "flex", justifyContent: "center" }}>
+          {products.length > 0 && (
+            <Stack spacing={2}>
+              <Pagination
+                count={count}
+                page={page}
+                variant="outlined"
+                shape="rounded"
+                size="large"
+                onChange={(event, value) => handlePageChange(value)}
+              />
+            </Stack>
+          )}
         </Box>
       </Box>
     </Stack>
