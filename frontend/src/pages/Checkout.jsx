@@ -69,7 +69,7 @@ const CheckoutPage = () => {
     Object.keys(shipping).forEach((f) => formData.append(f, shipping[f]));
 
     const res = await razorpayCreateOrder(formData);
-
+    console.log(res);
     const options = {
       key: res.data.key,
       amount: res.data.amount * 100,
@@ -87,6 +87,7 @@ const CheckoutPage = () => {
         formData.append("razorpay_signature", response.razorpay_signature);
 
         await razorpayVerifyPayment(formData);
+
         navigate(`/order-success/${response.razorpay_order_id}`);
       },
 

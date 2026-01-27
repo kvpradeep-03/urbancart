@@ -147,6 +147,7 @@ export const CartProvider = ({ children }) => {
       });
       setCart([]);
       fetchCart();
+      console.log("Payment verified: ", res);
       return res;
     } catch (err) {
       const msg = err?.response?.data?.error || "Payment verification failed";

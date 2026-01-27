@@ -4,11 +4,8 @@ from django.utils import timezone
 from django.db.models import Sum
 import pytz
 import razorpay
-from ..models import Cart,Order, OrderItem
-from ..serializers import (
-    OrderSerializer,
-    OrderDetailSerializer
-)
+from ..models import Cart, Order, OrderItem
+from ..serializers import OrderSerializer, OrderDetailSerializer
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView
@@ -21,6 +18,7 @@ from django.shortcuts import (
 )
 from app.utils.cloudinary_helpers import build_cloudinary_url
 from django.db.models import Q
+
 # brevo email service api
 import brevo_python
 from brevo_python.rest import ApiException
@@ -36,6 +34,7 @@ from django.db.models import Q
 client = razorpay.Client(
     auth=(os.getenv("RAZORPAY_KEY_ID"), os.getenv("RAZORPAY_KEY_SECRET"))
 )
+
 
 class PlaceOrder(APIView):
     # place order for COD's
@@ -238,6 +237,8 @@ class CreateRazorpayOrder(APIView):
         return Response(
             {
                 "razorpay_order_id": razorpay_order["id"],
+                "status": razorpay_order["status"],
+                "created_at": razorpay_order["created_at"],
                 "amount": total_amount,
                 "key": os.getenv("RAZORPAY_KEY_ID"),
                 "email": user.email,
@@ -426,7 +427,9 @@ class OrderDetail(APIView):
 
     def get(self, request, order_id):
         order = get_object_or_404(
-            Order, Q(order_id=order_id) | Q(razorpay_order_id=order_id), user=request.user
+            Order,
+            Q(order_id=order_id) | Q(razorpay_order_id=order_id),
+            user=request.user,
         )
         serializer = OrderDetailSerializer(order)
         return Response(serializer.data)
