@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
         const response = await api.get(
           "/auth/user/",
           {},
-          { withCredentials: true }
+          { withCredentials: true },
         );
         setUser(response.data);
       } catch (err) {
@@ -41,11 +41,11 @@ export const AuthProvider = ({ children }) => {
       const response = await api.get(
         "/auth/user/",
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
       setUser(response.data);
     } catch (err) {
-      console.error("Failed to fetch user:", err);
+      // console.error("Failed to fetch user:", err);
     }
   };
   const signup = async (payload) => {
@@ -77,12 +77,13 @@ export const AuthProvider = ({ children }) => {
     try {
       const loginResponse = await api.post("/auth/login/", payload);
       // console.log("LOGIN RESPONSE: ", loginResponse);
+      if (loginResponse.status == 200) {
+        const userDetailsResponse = await api.get("/auth/user/");
+        // console.log("User : ", userDetailsResponse);
+        setUser(userDetailsResponse.data);
+        setLoading(false);
+      }
 
-      const userDetailsResponse = await api.get("auth/user/");
-      // console.log("User : ", userDetailsResponse);
-
-      setUser(userDetailsResponse.data);
-      setLoading(false);
       return {
         success: true,
         message: "Login successfull!",
@@ -93,7 +94,7 @@ export const AuthProvider = ({ children }) => {
       // console.error("Login error: ", err);
       if (err.response) {
         setError(
-          err.response?.data?.detail || "Login failed. Please try again."
+          err.response?.data?.detail || "Login failed. Please try again.",
         );
         return { success: false, errors: err.response.data };
       }
@@ -111,7 +112,7 @@ export const AuthProvider = ({ children }) => {
         {},
         {
           withCredentials: true,
-        }
+        },
       );
       setUser(null);
 
@@ -130,7 +131,7 @@ export const AuthProvider = ({ children }) => {
         {},
         {
           withCredentials: true,
-        }
+        },
       );
       logout();
       return true;
