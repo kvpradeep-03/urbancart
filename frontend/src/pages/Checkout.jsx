@@ -30,6 +30,7 @@ const CheckoutPage = () => {
     razorpayCreateOrder,
     razorpayVerifyPayment,
   } = useContext(CartContext);
+  const [placingOrder, setPlacingOrder] = React.useState(false);
 
   const navigate = useNavigate();
   const toast = useToast();
@@ -54,51 +55,77 @@ const CheckoutPage = () => {
 
   const placeCodOrder = async () => {
     try {
+      setPlacingOrder(true);
       const formData = new FormData();
       Object.keys(shipping).forEach((f) => formData.append(f, shipping[f]));
       const res = await placeOrder(formData);
+      // console.log("Order placed: ", res);
       navigate(`/order-success/${res.data.order_id}`);
     } catch (error) {
+      setPlacingOrder(false);
       const errorMsg = error?.response?.data?.error;
-      console.log(errorMsg);
     }
   };
 
   const razorpayPayment = async () => {
-    const formData = new FormData();
-    Object.keys(shipping).forEach((f) => formData.append(f, shipping[f]));
+    try {
+      setPlacingOrder(true);
+      const formData = new FormData();
+      Object.keys(shipping).forEach((f) => formData.append(f, shipping[f]));
 
-    const res = await razorpayCreateOrder(formData);
-    console.log(res);
-    const options = {
-      key: res.data.key,
-      amount: res.data.amount * 100,
-      currency: "INR",
-      name: "Urbancart",
-      description: "Order Payment",
-      order_id: res.data.razorpay_order_id,
+      const res = await razorpayCreateOrder(formData);
 
-      handler: async function (response) {
-        const formData = new FormData();
-        Object.keys(shipping).forEach((f) => formData.append(f, shipping[f]));
+      const options = {
+        key: res.data.key,
+        amount: res.data.amount * 100,
+        currency: "INR",
+        name: "Urbancart",
+        description: "Order Payment",
+        order_id: res.data.razorpay_order_id,
 
-        formData.append("razorpay_order_id", response.razorpay_order_id);
-        formData.append("razorpay_payment_id", response.razorpay_payment_id);
-        formData.append("razorpay_signature", response.razorpay_signature);
+        handler: async function (response) {
+          try {
+            const verifyData = new FormData();
 
-        await razorpayVerifyPayment(formData);
+            Object.keys(shipping).forEach((f) =>
+              verifyData.append(f, shipping[f]),
+            );
 
-        navigate(`/order-success/${response.razorpay_order_id}`);
-      },
+            verifyData.append("razorpay_order_id", response.razorpay_order_id);
+            verifyData.append(
+              "razorpay_payment_id",
+              response.razorpay_payment_id,
+            );
+            verifyData.append(
+              "razorpay_signature",
+              response.razorpay_signature,
+            );
 
-      prefill: {
-        name: shipping.shipping_name,
-        contact: shipping.shipping_phone,
-      },
-      theme: { color: "#008cffff" },
-    };
+            const paymentRes = await razorpayVerifyPayment(verifyData);
 
-    new window.Razorpay(options).open();
+            navigate(`/order-success/${response.razorpay_order_id}`);
+          } catch (err) {
+            setPlacingOrder(false);
+          }
+        },
+
+        modal: {
+          ondismiss: function () {
+            setPlacingOrder(false); // user closed popup
+          },
+        },
+
+        prefill: {
+          name: shipping.shipping_name,
+          contact: shipping.shipping_phone,
+        },
+        theme: { color: "#008cffff" },
+      };
+
+      new window.Razorpay(options).open();
+    } catch (error) {
+      setPlacingOrder(false); // order creation failed
+    }
   };
 
   if (loading || !cart) return <CheckoutSkeleton />;
@@ -289,6 +316,7 @@ const CheckoutPage = () => {
                   "&:hover": { bgcolor: "#FF8C00" },
                 }}
                 onClick={handlePayment}
+                disabled={placingOrder}
               >
                 <Typography variant="h5" sx={{ fontSize: 16, fontWeight: 600 }}>
                   USE THIS PAYMENT METHOD

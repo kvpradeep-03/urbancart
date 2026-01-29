@@ -25,7 +25,7 @@ const OrderSuccess = () => {
       const res = await api.get(`/order/details/${orderId}/`);
       setOrder(res.data);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     } finally {
       setLoading(false);
     }
