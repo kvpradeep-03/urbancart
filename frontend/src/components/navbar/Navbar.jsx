@@ -42,7 +42,7 @@ const Navbar = ({ setShowLogin }) => {
         }}
       >
         <Badge
-          badgeContent={cart?.total_items ?? 0}
+          badgeContent={ cart?.total_items ?? 0}
           color="error"
           sx={{
             "& .MuiBadge-badge": {

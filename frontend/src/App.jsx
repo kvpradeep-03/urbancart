@@ -18,6 +18,14 @@ import ResetPassword from "./pages/ResetPassword";
 
 const App = () => {
   const [showLogin, setShowLogin] = React.useState(false);
+  React.useEffect(() => {
+    // This handler listens for the global "auth:loginRequired" event that we dispatched on refresh endpoint to show the login popup by setting setShowLogin to true
+    const handler = () => setShowLogin(true);
+    // This tells the browser When event auth:loginRequired happens, call handler
+    window.addEventListener("auth:loginRequired", handler);
+    // when the component unmounts, clean up the event listener to prevent memory leaks
+    return () => window.removeEventListener("auth:loginRequired", handler);
+  }, []);
   
   return (
     <>

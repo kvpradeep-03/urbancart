@@ -94,7 +94,11 @@ class PlaceOrder(APIView):
                     order=order,
                     product=item.product,
                     quantity=item.quantity,
-                    size=item.selected_size if item.selected_size else None,
+                    size=(
+                        item.selected_size.size.size
+                        if item.selected_size and item.selected_size.size
+                        else None
+                    ),
                     price=price,
                 )
                 total_amount += price * item.quantity
@@ -255,7 +259,6 @@ class VerifyRazorpayPayment(APIView):
     def post(self, request):
         try:
             user = request.user
-
             # Validation
             required_fields = [
                 "shipping_name",
@@ -283,21 +286,55 @@ class VerifyRazorpayPayment(APIView):
 
             # Verify signature with Razorpay
             try:
-                client.utility.verify_payment_signature(
-                    {
-                        "razorpay_order_id": razorpay_order_id,
-                        "razorpay_payment_id": razorpay_payment_id,
-                        "razorpay_signature": razorpay_signature,
-                    }
-                )
-            except:
-                return Response({"error": "Payment Verification Failed"}, status=400)
+                # Coerce to strings and strip whitespace to avoid mismatch
+                r_order_id = str(razorpay_order_id).strip()
+                r_payment_id = str(razorpay_payment_id).strip()
+                r_signature = str(razorpay_signature).strip()
+
+                # First tries SDK verification
+                try:
+                    client.utility.verify_payment_signature(
+                        {
+                            "razorpay_order_id": r_order_id,
+                            "razorpay_payment_id": r_payment_id,
+                            "razorpay_signature": r_signature,
+                        }
+                    )
+                except Exception:
+                    # Fallback manual HMAC SHA256 verification so we can debug mismatches
+                    import hmac
+                    import hashlib
+
+                    secret = os.getenv("RAZORPAY_KEY_SECRET") or ""
+                    msg = (r_order_id + "|" + r_payment_id).encode("utf-8")
+                    generated = hmac.new(
+                        secret.encode("utf-8"), msg, hashlib.sha256
+                    ).hexdigest()
+                    if not hmac.compare_digest(generated, r_signature):
+                        raise ValueError("signature_mismatch")
+            except Exception as e:
+                # print("SIGNATURE ERROR:", e)
+                details = {
+                    "error": "Payment Verification Failed",
+                    "details": str(e),
+                    "razorpay_order_id": r_order_id,
+                    "razorpay_payment_id": r_payment_id,
+                    "razorpay_signature": r_signature,
+                }
+                if "generated" in locals():
+                    details["generated_signature"] = generated
+                return Response(details, status=400)
                 # After payment verified the order is created
 
             # Order creation
             cart = get_object_or_404(Cart, user=user)
-            total_amount = sum(
-                item.product.discount_price * item.quantity for item in cart.items.all()
+            # Include delivery fee to match amount used when creating Razorpay order
+            total_amount = (
+                sum(
+                    item.product.discount_price * item.quantity
+                    for item in cart.items.all()
+                )
+                + 45
             )
 
             order = Order.objects.create(
@@ -322,7 +359,11 @@ class VerifyRazorpayPayment(APIView):
                     order=order,
                     product=item.product,
                     quantity=item.quantity,
-                    size=item.selected_size if item.selected_size else None,
+                    size=(
+                        item.selected_size.size.size
+                        if item.selected_size and item.selected_size.size
+                        else None
+                    ),
                     price=item.product.discount_price,
                 )
 
@@ -403,10 +444,17 @@ class VerifyRazorpayPayment(APIView):
                 {"error": f"Error While Sending Email\n{e}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-        except:
-            order.payment_status = "failed"
-            order.save()
-            return Response({"error": "Payment Failed"}, status=400)
+        except Exception as exc:
+            print("VERIFY PAYMENT EXCEPTION:", exc)
+            if "order" in locals() and hasattr(order, "payment_status"):
+                try:
+                    order.payment_status = "failed"
+                    order.save()
+                except Exception:
+                    pass
+            return Response(
+                {"error": "Payment Failed", "details": str(exc)}, status=400
+            )
 
         return Response(
             {
