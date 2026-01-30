@@ -65,7 +65,7 @@ export const CartProvider = ({ children }) => {
       toast.success("Product added to cart!");
       fetchCart(); // Refresh cart UI
     } catch (err) {
-      console.error(err);
+      // console.error(err);
       toast.error("something went wrong, please try again");
     }
   };
@@ -124,7 +124,6 @@ export const CartProvider = ({ children }) => {
       return res;
     } catch (err) {
       const msg = err?.response?.data?.error || "Order failed";
-      // console.error("Order Placement Error: ", msg);
       toast.error("Error while placing order, Try again later");
     }
   };
@@ -133,7 +132,7 @@ export const CartProvider = ({ children }) => {
     try {
       const res = await api.post("/payment/create-order/", formData, {
         withCredentials: true,
-      });
+      }); 
       return res;
     } catch (err) {
       const msg = err?.response?.data?.error || "Unable to create order";
@@ -148,7 +147,6 @@ export const CartProvider = ({ children }) => {
       });
       setCart([]);
       fetchCart();
-      // console.log("Payment verified: ", res);
       return res;
     } catch (err) {
       const msg = err?.response?.data?.error || "Payment verification failed";

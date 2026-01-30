@@ -45,30 +45,33 @@ class PlaceOrder(APIView):
         try:
             user = request.user
             cart = get_object_or_404(Cart, user=user)
-
             if not cart.items.exists():
                 return Response({"error": "Cart is empty"}, status=400)
+            # Delivery form validation: use DRF-parsed data (works with JSON, form, multipart)
+            sd = request.data or {}
+            shipping_name = (sd.get("shipping_name") or "").strip()
+            shipping_phone = (sd.get("shipping_phone") or "").strip()
+            shipping_street = (sd.get("shipping_street") or "").strip()
+            shipping_city = (sd.get("shipping_city") or "").strip()
+            shipping_state = (sd.get("shipping_state") or "").strip()
+            shipping_pincode = (sd.get("shipping_pincode") or "").strip()
 
-            # Delivery form validation
-            shipping_data = request.POST.dict()
-            if not re.match(r"^[A-Za-z\s]{3,50}$", shipping_data["shipping_name"]):
+            if not re.match(r"^[A-Za-z\s]{3,50}$", shipping_name):
                 return Response({"error": "Invalid name format"}, status=400)
 
-            if not re.match(r"^[0-9]\d{9}$", shipping_data["shipping_phone"]):
+            if not re.match(r"^[0-9]\d{9}$", shipping_phone):
                 return Response({"error": "Phone must be 10 digits"}, status=400)
 
-            if not re.match(
-                r"^[A-Za-z0-9\s,.-:]{5,100}$", shipping_data["shipping_street"]
-            ):
+            if not re.match(r"^[A-Za-z0-9\s,.-:]{5,100}$", shipping_street):
                 return Response({"error": "Invalid street address"}, status=400)
 
-            if not re.match(r"^[A-Za-z\s]{2,50}$", shipping_data["shipping_city"]):
+            if not re.match(r"^[A-Za-z\s]{2,50}$", shipping_city):
                 return Response({"error": "Invalid city name"}, status=400)
 
-            if not re.match(r"^[A-Za-z\s]{2,50}$", shipping_data["shipping_state"]):
+            if not re.match(r"^[A-Za-z\s]{2,50}$", shipping_state):
                 return Response({"error": "Invalid state name"}, status=400)
 
-            if not re.match(r"^\d{6}$", shipping_data["shipping_pincode"]):
+            if not re.match(r"^\d{6}$", shipping_pincode):
                 return Response({"error": "Pincode must be 6 digits"}, status=400)
 
             # Order updation in DB
@@ -76,12 +79,12 @@ class PlaceOrder(APIView):
                 user=user,
                 payment_method="Cash on Delivery",
                 payment_status="pending",
-                shipping_name=shipping_data["shipping_name"],
-                shipping_phone=shipping_data["shipping_phone"],
-                shipping_street=shipping_data["shipping_street"],
-                shipping_city=shipping_data["shipping_city"],
-                shipping_state=shipping_data["shipping_state"],
-                shipping_pincode=shipping_data["shipping_pincode"],
+                shipping_name=shipping_name,
+                shipping_phone=shipping_phone,
+                shipping_street=shipping_street,
+                shipping_city=shipping_city,
+                shipping_state=shipping_state,
+                shipping_pincode=shipping_pincode,
             )
             order.save()
 
@@ -204,26 +207,31 @@ class CreateRazorpayOrder(APIView):
         if not cart.items.exists():
             return Response({"error": "Cart is empty"}, status=400)
 
-        # Delivery form validation
-        shipping_data = request.POST.dict()
-        if not re.match(r"^[A-Za-z\s]{3,50}$", shipping_data["shipping_name"]):
+        # Delivery form validation: use DRF request.data for reliable parsing
+        sd = request.data or {}
+        shipping_name = (sd.get("shipping_name") or "").strip()
+        shipping_phone = (sd.get("shipping_phone") or "").strip()
+        shipping_street = (sd.get("shipping_street") or "").strip()
+        shipping_city = (sd.get("shipping_city") or "").strip()
+        shipping_state = (sd.get("shipping_state") or "").strip()
+        shipping_pincode = (sd.get("shipping_pincode") or "").strip()
+
+        if not re.match(r"^[A-Za-z\s]{3,50}$", shipping_name):
             return Response({"error": "Invalid name format"}, status=400)
 
-        if not re.match(r"^[0-9]\d{9}$", shipping_data["shipping_phone"]):
+        if not re.match(r"^[0-9]\d{9}$", shipping_phone):
             return Response({"error": "Phone must be 10 digits"}, status=400)
 
-        if not re.match(
-            r"^[A-Za-z0-9\s,.-:]{5,100}$", shipping_data["shipping_street"]
-        ):
+        if not re.match(r"^[A-Za-z0-9\s,.-:]{5,100}$", shipping_street):
             return Response({"error": "Invalid street address"}, status=400)
 
-        if not re.match(r"^[A-Za-z\s]{2,50}$", shipping_data["shipping_city"]):
+        if not re.match(r"^[A-Za-z\s]{2,50}$", shipping_city):
             return Response({"error": "Invalid city name"}, status=400)
 
-        if not re.match(r"^[A-Za-z\s]{2,50}$", shipping_data["shipping_state"]):
+        if not re.match(r"^[A-Za-z\s]{2,50}$", shipping_state):
             return Response({"error": "Invalid state name"}, status=400)
 
-        if not re.match(r"^\d{6}$", shipping_data["shipping_pincode"]):
+        if not re.match(r"^\d{6}$", shipping_pincode):
             return Response({"error": "Pincode must be 6 digits"}, status=400)
 
         total_amount = (

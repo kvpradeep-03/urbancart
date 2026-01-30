@@ -59,11 +59,12 @@ const CheckoutPage = () => {
       const formData = new FormData();
       Object.keys(shipping).forEach((f) => formData.append(f, shipping[f]));
       const res = await placeOrder(formData);
-      // console.log("Order placed: ", res);
+      // console.log("COD placeOrder res: ", res);
       navigate(`/order-success/${res.data.order_id}`);
     } catch (error) {
       setPlacingOrder(false);
       const errorMsg = error?.response?.data?.error;
+      // console.error("COD Order Error: ", errorMsg);
     }
   };
 
@@ -74,7 +75,7 @@ const CheckoutPage = () => {
       Object.keys(shipping).forEach((f) => formData.append(f, shipping[f]));
 
       const res = await razorpayCreateOrder(formData);
-
+      // console.log("Razorpay createOrder res: ", res);
       const options = {
         key: res.data.key,
         amount: res.data.amount * 100,
@@ -102,7 +103,7 @@ const CheckoutPage = () => {
             );
 
             const paymentRes = await razorpayVerifyPayment(verifyData);
-
+            // console.log("Razorpay verifyPayment res: ", paymentRes);
             navigate(`/order-success/${response.razorpay_order_id}`);
           } catch (err) {
             setPlacingOrder(false);
