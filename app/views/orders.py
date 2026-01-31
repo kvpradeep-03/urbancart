@@ -17,7 +17,6 @@ from django.shortcuts import (
     get_object_or_404,
 )
 from app.utils.cloudinary_helpers import build_cloudinary_url
-from django.db.models import Q
 
 # brevo email service api
 import brevo_python
@@ -86,7 +85,6 @@ class PlaceOrder(APIView):
                 shipping_state=shipping_state,
                 shipping_pincode=shipping_pincode,
             )
-            order.save()
 
             total_amount = 0
 
@@ -108,88 +106,92 @@ class PlaceOrder(APIView):
 
             order.total_amount = total_amount
             order.save()
-
             cart.items.all().delete()  # clears the cart after order placed
 
-            template_path = os.path.join(
-                os.path.dirname(__file__), "../../email_templates", "Orders.html"
-            )
+            # Sending Order Confirmation Email
+            try:
+                template_path = os.path.join(
+                    os.path.dirname(__file__), "../../email_templates", "Orders.html"
+                )
+                try:
+                    with open(template_path, "r", encoding="utf-8") as f:
+                        html_template = f.read()
+                except FileNotFoundError:
+                    # If template not found, uses a simple fallback message
+                    html_template = "<p>Your order has been placed successfully.</p>"
 
-            with open(template_path, "r", encoding="utf-8") as f:
-                html_template = f.read()
+                # Build ORDER_ITEMS_LOOP HTML
+                items_html = ""
+                for item in order.items.all():
+                    img_url = ""
+                    if item.product.thumbnail and hasattr(
+                        item.product.thumbnail, "url"
+                    ):
+                        img_url = build_cloudinary_url(item.product.thumbnail.url)
+                    item_block = f"""
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;">
+                        <tr>
+                            <td width="90" valign="top" style="padding:0 10px 10px 0;">
+                                <img src="{img_url}" width="80" height="80"
+                                    style="border-radius:8px; object-fit:cover; display:block;">
+                            </td>
 
-            # Build ORDER_ITEMS_LOOP HTML
-            items_html = ""
-            for item in order.items.all():
-                img_url = build_cloudinary_url(item.product.thumbnail.url)
-                item_block = f"""
-                <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;">
-                    <tr>
-                        <td width="90" valign="top" style="padding:0 10px 10px 0;">
-                            <img src="{img_url}" width="80" height="80"
-                                style="border-radius:8px; object-fit:cover; display:block;">
-                        </td>
+                            <td valign="top" style="padding-bottom:10px;">
+                                <p style="margin:0; font-size:15px; font-weight:600; color:#222; font-family:'Poppins', Arial;">
+                                    {item.product.name}
+                                </p>
+                                <p style="margin:4px 0 0; font-size:14px; color:#555; font-family:'Poppins', Arial;">
+                                    Qty: {item.quantity}<br>
+                                    Price: ₹{item.product.discount_price}<br>
+                                    <strong>Line Total:</strong> ₹{item.quantity * item.product.discount_price}
+                                </p>
+                            </td>
+                        </tr>
+                        <tr><td colspan="2" style="border-bottom:1px solid #eee; padding-top:8px;"></td></tr>
+                    </table>
+                    """
 
-                        <td valign="top" style="padding-bottom:10px;">
-                            <p style="margin:0; font-size:15px; font-weight:600; color:#222; font-family:'Poppins', Arial;">
-                                {item.product.name}
-                            </p>
-                            <p style="margin:4px 0 0; font-size:14px; color:#555; font-family:'Poppins', Arial;">
-                                Qty: {item.quantity}<br>
-                                Price: ₹{item.product.discount_price}<br>
-                                <strong>Line Total:</strong> ₹{item.quantity * item.product.discount_price}
-                            </p>
-                        </td>
-                    </tr>
-                    <tr><td colspan="2" style="border-bottom:1px solid #eee; padding-top:8px;"></td></tr>
-                </table>
-                """
+                    items_html += item_block
 
-                items_html += item_block
+                # Convert order date to IST
+                ist = pytz.timezone("Asia/Kolkata")
+                order_date_ist = order.order_date.astimezone(ist)
 
-            # Convert order date to IST
-            ist = pytz.timezone("Asia/Kolkata")
-            order_date_ist = order.order_date.astimezone(ist)
+                replacements = {
+                    "[[USER_NAME]]": user.username,
+                    "[[ORDER_ID]]": order.order_id,
+                    "[[ORDER_DATE]]": order_date_ist.strftime("%d-%m-%Y %I:%M %p"),
+                    "[[PAYMENT_METHOD]]": "Cash on Delivery",
+                    "[[TOTAL_AMOUNT]]": total_amount,
+                    "[[ORDER_ITEMS_LOOP]]": items_html,
+                }
 
-            replacements = {
-                "[[USER_NAME]]": user.username,
-                "[[ORDER_ID]]": order.order_id,
-                "[[ORDER_DATE]]": order_date_ist.strftime("%d-%m-%Y %I:%M %p"),
-                "[[PAYMENT_METHOD]]": "Cash on Delivery",
-                "[[TOTAL_AMOUNT]]": total_amount,
-                "[[ORDER_ITEMS_LOOP]]": items_html,
-            }
+                for placeholder, value in replacements.items():
+                    html_template = html_template.replace(placeholder, str(value))
 
-            for placeholder, value in replacements.items():
-                html_template = html_template.replace(placeholder, str(value))
+                configuration = brevo_python.Configuration()
+                configuration.api_key["api-key"] = os.getenv("BREVO_API_KEY")
 
-            configuration = brevo_python.Configuration()
-            api_key = os.getenv("BREVO_API_KEY")
-            configuration.api_key["api-key"] = api_key
+                brevo_python.TransactionalEmailsApi(
+                    brevo_python.ApiClient(configuration)
+                ).send_transac_email(
+                    brevo_python.SendSmtpEmail(
+                        to=[{"email": user.email, "name": user.username}],
+                        sender={"email": "kvpradeep60@gmail.com", "name": "Urbancart"},
+                        subject="Order placed successfully",
+                        html_content=html_template,
+                    )
+                )
+            except Exception as e:
+                print("EMAIL ERROR (ignored):", e)
 
-            api_instance = brevo_python.TransactionalEmailsApi(
-                brevo_python.ApiClient(configuration)
-            )
+            # except FileNotFoundError:
+            #     return Response({"error": f"Email template not found at {template_path}"})
 
-            email_content = brevo_python.SendSmtpEmail(
-                to=[{"email": user.email, "name": user.username}],
-                sender={"email": "kvpradeep60@gmail.com", "name": "Urbancart"},
-                subject="Order placed successfully, Thank you.",
-                html_content=html_template,
-            )
-            api_instance.send_transac_email(email_content)
-
-        except FileNotFoundError:
-            return Response({"error": f"Email template not found at {template_path}"})
-        except ApiException as e:
-            return Response(
-                {"error": f"Error While Sending Email\n{e}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
         except Exception as e:
             return Response(
-                {"error": f"Error while Placing Order\n{e}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                {"error": "Error while placing order", "details": str(e)},
+                status=500,
             )
 
         return Response({"message": "Order placed", "order_id": order.order_id})
@@ -377,81 +379,83 @@ class VerifyRazorpayPayment(APIView):
 
             cart.items.all().delete()  # Clear cart
 
-            template_path = os.path.join(
-                os.path.dirname(__file__), "../../email_templates", "Orders.html"
-            )
+            # Sending Order Confirmation Email
+            try:
+                template_path = os.path.join(
+                    os.path.dirname(__file__), "../../email_templates", "Orders.html"
+                )
+                try:
+                    with open(template_path, "r", encoding="utf-8") as f:
+                        html_template = f.read()
+                except FileNotFoundError:
+                    # If template not found, uses a simple fallback message
+                    html_template = "<p>Your order has been placed successfully.</p>"
 
-            with open(template_path, "r", encoding="utf-8") as f:
-                html_template = f.read()
+                # Build ORDER_ITEMS_LOOP HTML
+                items_html = ""
+                for item in order.items.all():
+                    img_url = ""
+                    if item.product.thumbnail and hasattr(
+                        item.product.thumbnail, "url"
+                    ):
+                        img_url = build_cloudinary_url(item.product.thumbnail.url)
+                    item_block = f"""
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;">
+                        <tr>
+                            <td width="90" valign="top" style="padding:0 10px 10px 0;">
+                                <img src="{img_url}" width="80" height="80"
+                                    style="border-radius:8px; object-fit:cover; display:block;">
+                            </td>
 
-            # Build ORDER_ITEMS_LOOP HTML
-            items_html = ""
-            for item in order.items.all():
-                img_url = build_cloudinary_url(item.product.thumbnail.url)
-                item_block = f"""
-                <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;">
-                    <tr>
-                        <td width="90" valign="top" style="padding:0 10px 10px 0;">
-                            <img src="{img_url}" width="80" height="80"
-                                style="border-radius:8px; object-fit:cover; display:block;">
-                        </td>
+                            <td valign="top" style="padding-bottom:10px;">
+                                <p style="margin:0; font-size:15px; font-weight:600; color:#222; font-family:'Poppins', Arial;">
+                                    {item.product.name}
+                                </p>
+                                <p style="margin:4px 0 0; font-size:14px; color:#555; font-family:'Poppins', Arial;">
+                                    Qty: {item.quantity}<br>
+                                    Price: ₹{item.product.discount_price}<br>
+                                    <strong>Line Total:</strong> ₹{item.quantity * item.product.discount_price}
+                                </p>
+                            </td>
+                        </tr>
+                        <tr><td colspan="2" style="border-bottom:1px solid #eee; padding-top:8px;"></td></tr>
+                    </table>
+                    """
 
-                        <td valign="top" style="padding-bottom:10px;">
-                            <p style="margin:0; font-size:15px; font-weight:600; color:#222; font-family:'Poppins', Arial;">
-                                {item.product.name}
-                            </p>
-                            <p style="margin:4px 0 0; font-size:14px; color:#555; font-family:'Poppins', Arial;">
-                                Qty: {item.quantity}<br>
-                                Price: ₹{item.product.discount_price}<br>
-                                <strong>Line Total:</strong> ₹{item.quantity * item.product.discount_price}
-                            </p>
-                        </td>
-                    </tr>
-                    <tr><td colspan="2" style="border-bottom:1px solid #eee; padding-top:8px;"></td></tr>
-                </table>
-                """
+                    items_html += item_block
 
-                items_html += item_block
+                # Convert order date to IST
+                ist = pytz.timezone("Asia/Kolkata")
+                order_date_ist = order.order_date.astimezone(ist)
 
-            # Convert order date to IST
-            ist = pytz.timezone("Asia/Kolkata")
-            order_date_ist = order.order_date.astimezone(ist)
+                replacements = {
+                    "[[USER_NAME]]": user.username,
+                    "[[ORDER_ID]]": order.order_id,
+                    "[[ORDER_DATE]]": order_date_ist.strftime("%d-%m-%Y %I:%M %p"),
+                    "[[PAYMENT_METHOD]]": "Razorpay",
+                    "[[TOTAL_AMOUNT]]": total_amount,
+                    "[[ORDER_ITEMS_LOOP]]": items_html,
+                }
 
-            replacements = {
-                "[[USER_NAME]]": user.username,
-                "[[ORDER_ID]]": order.order_id,
-                "[[ORDER_DATE]]": order_date_ist.strftime("%d-%m-%Y %I:%M %p"),
-                "[[PAYMENT_METHOD]]": "Razorpay",
-                "[[TOTAL_AMOUNT]]": total_amount,
-                "[[ORDER_ITEMS_LOOP]]": items_html,
-            }
+                for placeholder, value in replacements.items():
+                    html_template = html_template.replace(placeholder, str(value))
 
-            for placeholder, value in replacements.items():
-                html_template = html_template.replace(placeholder, str(value))
+                configuration = brevo_python.Configuration()
+                configuration.api_key["api-key"] = os.getenv("BREVO_API_KEY")
 
-            configuration = brevo_python.Configuration()
-            api_key = os.getenv("BREVO_API_KEY")
-            configuration.api_key["api-key"] = api_key
+                brevo_python.TransactionalEmailsApi(
+                    brevo_python.ApiClient(configuration)
+                ).send_transac_email(
+                    brevo_python.SendSmtpEmail(
+                        to=[{"email": user.email, "name": user.username}],
+                        sender={"email": "kvpradeep60@gmail.com", "name": "Urbancart"},
+                        subject="Order placed successfully",
+                        html_content=html_template,
+                    )
+                )
+            except Exception as e:
+                print("EMAIL ERROR (ignored):", e)
 
-            api_instance = brevo_python.TransactionalEmailsApi(
-                brevo_python.ApiClient(configuration)
-            )
-
-            email_content = brevo_python.SendSmtpEmail(
-                to=[{"email": user.email, "name": user.username}],
-                sender={"email": "kvpradeep60@gmail.com", "name": "Urbancart"},
-                subject="Order placed successfully, Thank you.",
-                html_content=html_template,
-            )
-            api_instance.send_transac_email(email_content)
-
-        except FileNotFoundError:
-            return Response({"error": f"Email template not found at {template_path}"})
-        except ApiException as e:
-            return Response(
-                {"error": f"Error While Sending Email\n{e}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
         except Exception as exc:
             print("VERIFY PAYMENT EXCEPTION:", exc)
             if "order" in locals() and hasattr(order, "payment_status"):
