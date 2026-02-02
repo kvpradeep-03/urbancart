@@ -20,5 +20,7 @@ def build_cloudinary_url(field):
         secure=True,
         fetch_format="auto",
         quality="auto",
+        resource_type="image",  # IMPORTANT for email proxies
+        type="upload",  # Avoid auto-detection
     )
     return url
