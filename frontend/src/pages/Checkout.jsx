@@ -93,14 +93,8 @@ const CheckoutPage = () => {
             );
 
             verifyData.append("razorpay_order_id", response.razorpay_order_id);
-            verifyData.append(
-              "razorpay_payment_id",
-              response.razorpay_payment_id,
-            );
-            verifyData.append(
-              "razorpay_signature",
-              response.razorpay_signature,
-            );
+            verifyData.append("razorpay_payment_id", response.razorpay_payment_id);
+            verifyData.append("razorpay_signature", response.razorpay_signature);
 
             const paymentRes = await razorpayVerifyPayment(verifyData);
             // console.log("Razorpay verifyPayment res: ", paymentRes);
@@ -118,13 +112,6 @@ const CheckoutPage = () => {
           escape: true,
           backdropclose: false,
         },
-        // cloudflare on render doesn't support window location change it blocks the window.opener if its cross orgin domains
-        // Razorpay mock bank page requires access to window.opener.
-        // when `redirect: true` Razorpay don't tries to finish the flow or to call this handler or window.opener instead it opens its own hosted payment page, The bank mock page (Success / Failure buttons) is rendered inside Razorpay’s domain
-        // after completion of razorpays inner flow it redirected to `callback_url` which forces to hit our backend to verify payment endpoint and show success / failure accordingly.
-        redirect: true,
-        callback_url: res.data.callback_url,
-        redirect: false,
 
         prefill: {
           name: shipping.shipping_name,
