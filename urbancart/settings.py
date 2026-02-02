@@ -38,10 +38,16 @@ if DEBUG:
     # Localhost cookies
     AUTH_COOKIE_SAMESITE = "Lax"
     AUTH_COOKIE_SECURE = False
+
+    CSRF_COOKIE_SAMESITE = "Lax"
+    CSRF_COOKIE_SECURE = False
 else:
     # Production cookies
     AUTH_COOKIE_SAMESITE = "None"
     AUTH_COOKIE_SECURE = True
+
+    CSRF_COOKIE_SAMESITE = "None"
+    CSRF_COOKIE_SECURE = True
 
     # Razorpay uses pop-up windows for payment processing. were cloudsflare on render blocks them by default. due to its security policies like COOP and COEP.
     # These headers BLOCK that window and cause blank popup. so disabling them.
