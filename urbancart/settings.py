@@ -43,6 +43,14 @@ else:
     AUTH_COOKIE_SAMESITE = "None"
     AUTH_COOKIE_SECURE = True
 
+    # Razorpay uses pop-up windows for payment processing. were cloudsflare on render blocks them by default. due to its security policies like COOP and COEP.
+    # These headers BLOCK that window and cause blank popup. so disabling them.
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+    SECURE_CROSS_ORIGIN_EMBEDDER_POLICY = None
+
+    # Razorpay opens external pages in iframes for payment processing.
+    # These headers BLOCK those iframes and cause payment failures. so disabling them.
+    X_FRAME_OPTIONS = "SAMEORIGIN"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
