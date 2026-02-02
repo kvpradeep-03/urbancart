@@ -34,6 +34,9 @@ SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
 # should export DEBUG=True while running local server
 DEBUG = os.getenv("DEBUG", "").lower() == "true" #if debug var is notsetted instead of None it takes "", for condentional checking here.
 
+# Allow sending cookies
+CORS_ALLOW_CREDENTIALS = True
+
 if DEBUG:
     # Localhost cookies
     AUTH_COOKIE_SAMESITE = "Lax"
@@ -41,6 +44,18 @@ if DEBUG:
 
     CSRF_COOKIE_SAMESITE = "Lax"
     CSRF_COOKIE_SECURE = False
+
+    # Only allow cross-origin requests from these specific domains, and include credentials when they request them.
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+
+    # is a security whitelist that defines which external domains are trusted to make POST, PUT, DELETE, or PATCH requests to your Django backend
+    CSRF_TRUSTED_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
 else:
     # Production cookies
     AUTH_COOKIE_SAMESITE = "None"
@@ -48,6 +63,14 @@ else:
 
     CSRF_COOKIE_SAMESITE = "None"
     CSRF_COOKIE_SECURE = True
+
+    CORS_ALLOWED_ORIGINS = [
+        "https://urbancart-w92a.onrender.com",
+    ]
+
+    CSRF_TRUSTED_ORIGINS = [
+        "https://urbancart-w92a.onrender.com",
+    ]
 
     # Razorpay uses pop-up windows for payment processing. were cloudsflare on render blocks them by default. due to its security policies like COOP and COEP.
     # These headers BLOCK that window and cause blank popup. so disabling them.
@@ -122,27 +145,6 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
-
-# Allow sending cookies
-CORS_ALLOW_CREDENTIALS = True
-
-
-# Only allow cross-origin requests from these specific domains, and include credentials when they request them.
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:8000",
-    "https://urbancart-w92a.onrender.com",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
-
-
-# is a security whitelist that defines which external domains are trusted to make POST, PUT, DELETE, or PATCH requests to your Django backend
-CSRF_TRUSTED_ORIGINS = [
-    "http://127.0.0.1:8000",
-    "https://urbancart-w92a.onrender.com",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
 
 ROOT_URLCONF = "urbancart.urls"
 
