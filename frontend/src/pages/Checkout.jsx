@@ -112,9 +112,14 @@ const CheckoutPage = () => {
 
         modal: {
           ondismiss: function () {
+            toast.error("Payment cancelled");
             setPlacingOrder(false); // user closed popup
           },
+          escape: true,
+          backdropclose: false,
         },
+        callback_url: res.data.callback_url,
+        redirect: false,
 
         prefill: {
           name: shipping.shipping_name,

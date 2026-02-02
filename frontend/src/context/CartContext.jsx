@@ -124,7 +124,7 @@ export const CartProvider = ({ children }) => {
       return res;
     } catch (err) {
       const msg = err?.response?.data?.error || "Order failed";
-      toast.error("Error while placing order, Try again later");
+      toast.error(msg);
     }
   };
 
@@ -136,7 +136,7 @@ export const CartProvider = ({ children }) => {
       return res;
     } catch (err) {
       const msg = err?.response?.data?.error || "Unable to create order";
-      toast.error("Unable to create order, Try again later");
+      toast.error(msg);
     }
   };
 
@@ -150,7 +150,7 @@ export const CartProvider = ({ children }) => {
       return res;
     } catch (err) {
       const msg = err?.response?.data?.error || "Payment verification failed";
-      toast.error("Payment verification failed");
+      toast.error(msg);
       throw err;
     }
   };

@@ -255,6 +255,7 @@ class CreateRazorpayOrder(APIView):
                 "created_at": razorpay_order["created_at"],
                 "amount": total_amount,
                 "key": os.getenv("RAZORPAY_KEY_ID"),
+                "callback_url": os.getenv("RAZORPAY_CALLBACK_URL"),
                 "email": user.email,
                 "name": user.username,
             }
