@@ -18,6 +18,13 @@ import ResetPassword from "./pages/ResetPassword";
 import { getCSRF } from "./components/auth/axios";
 
 const App = () => {
+    //Fetch CSRF token on app load
+    useEffect(() => {
+      getCSRF().catch(() => {
+        console.warn("CSRF fetch failed");
+      });
+    }, []);
+
   const [showLogin, setShowLogin] = React.useState(false);
   useEffect(() => {
     // This handler listens for the global "auth:loginRequired" event that we dispatched on refresh endpoint to show the login popup by setting setShowLogin to true
@@ -26,12 +33,6 @@ const App = () => {
     window.addEventListener("auth:loginRequired", handler);
     // when the component unmounts, clean up the event listener to prevent memory leaks
     return () => window.removeEventListener("auth:loginRequired", handler);
-  }, []);
-
-  useEffect(() => {
-    getCSRF().catch(() => {
-      console.warn("CSRF fetch failed");
-    });
   }, []);
 
   return (
