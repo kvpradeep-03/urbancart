@@ -4,7 +4,7 @@ axios.defaults.xsrfCookieName = "csrftoken";
 axios.defaults.xsrfHeaderName = "X-CSRFToken";
 
 export const getCSRF = () => {
-  return axios.get(`${import.meta.env.VITE_API_URL}/csrf/`, {
+  return axios.get(`${import.meta.env.VITE_API_URL}/auth/csrf/`, {
     withCredentials: true,
   });
 };
