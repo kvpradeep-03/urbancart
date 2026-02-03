@@ -32,9 +32,6 @@ from rest_framework_simplejwt.exceptions import TokenError
 from datetime import timedelta
 from rest_framework.response import Response
 from rest_framework import status
-from django.http import JsonResponse
-from django.views.decorators.csrf import ensure_csrf_cookie
-from django.views.decorators.http import require_GET
 
 # brevo email service api
 import brevo_python
@@ -52,12 +49,6 @@ from django.utils.http import urlsafe_base64_encode
 # Authentication & Permissions: It automatically checks the permission_classes and authentication_classes (like TokenAuthentication) before running your post() method.
 # Method Dispatching: It determines whether the request is a POST, GET, PUT, or DELETE and automatically calls the matching method you define (def post, def get, etc.).
 # Exception Handling: It catches common errors (like validation failures) and converts them into structured, readable HTTP error responses (e.g., Status 400 Bad Request) instead of crashing the server.
-
-
-@require_GET
-@ensure_csrf_cookie
-def csrf(request):
-    return JsonResponse({"message": "CSRF cookie set"})
 
 
 class UserRegistrationAPIView(APIView):

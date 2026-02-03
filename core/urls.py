@@ -10,7 +10,7 @@ from .views import (
     DeleteAccountAPIView,
     PasswordResetRequestAPIView,
     PasswordResetConfirmAPIView,
-    EditUserProfile,csrf
+    EditUserProfile,
 )
 
 urlpatterns = [
@@ -18,7 +18,6 @@ urlpatterns = [
     path("register/", UserRegistrationAPIView.as_view(), name="api_register"),
     # JWT Login (customized email/ authentication)
     path("login/", EmailLoginAPIView.as_view(), name="token_obtain_pair"),
-    path("csrf/", csrf, name="csrf"),
     path("refresh/", RefreshAPIView.as_view(), name="token_refresh"),
     # # Maps the URL path 'login/' to the view class UserLoginAPIView
     # path("login/", UserLoginAPIView.as_view(), name="api_login"),

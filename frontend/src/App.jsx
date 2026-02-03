@@ -15,11 +15,10 @@ import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import ForgetPassword from "./pages/ForgetPassword";
 import ResetPassword from "./pages/ResetPassword";
-import { getCSRF } from "./components/auth/axios";
 
 const App = () => {
   const [showLogin, setShowLogin] = React.useState(false);
-  useEffect(() => {
+  React.useEffect(() => {
     // This handler listens for the global "auth:loginRequired" event that we dispatched on refresh endpoint to show the login popup by setting setShowLogin to true
     const handler = () => setShowLogin(true);
     // This tells the browser When event auth:loginRequired happens, call handler
@@ -27,13 +26,7 @@ const App = () => {
     // when the component unmounts, clean up the event listener to prevent memory leaks
     return () => window.removeEventListener("auth:loginRequired", handler);
   }, []);
-
-  useEffect(() => {
-    getCSRF().catch(() => {
-      console.warn("CSRF fetch failed");
-    });
-  }, []);
-
+  
   return (
     <>
       {showLogin ? <Auth setShowLogin={setShowLogin} /> : <></>}
