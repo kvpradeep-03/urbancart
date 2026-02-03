@@ -1,5 +1,11 @@
 import axios from "axios";
 
+export const getCSRF = () => {
+  return axios.get("/api/csrf/", {
+    withCredentials: true,
+  });
+};
+
 // backend api baseURL is https://domain/api/ {api endpoint} and anything outside /api/ is served by frontend
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
