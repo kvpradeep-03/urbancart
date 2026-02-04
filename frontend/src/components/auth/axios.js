@@ -8,6 +8,8 @@ export const getCSRF = () => {
     withCredentials: true,
   });
 };
+// Dockerfile contains ARG VITE_API_URL -> ENV VITE_API_URL=$VITE_API_URL before npm run build, then this axios file will be compiled with the production URL baked in.
+console.log(import.meta.env.VITE_API_URL);
 
 // backend api baseURL is https://domain/api/ {api endpoint} and anything outside /api/ is served by frontend
 const api = axios.create({

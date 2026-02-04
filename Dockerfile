@@ -8,6 +8,10 @@ FROM node:18 AS frontend-builder
 
 WORKDIR /app/frontend
 
+# passing build time variable from docker build command
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 COPY frontend/package*.json ./
 
 # here we didnt install dependencies into seperate folder /install like we done on python-builder because node modules are needed only for building the frontend and not needed at runtime.
@@ -72,6 +76,7 @@ RUN python manage.py collectstatic --noinput
 EXPOSE 10000
 
 # Starting the container with gunicorn
+# while building we have to pass a build-arg VITE_API_URL to the docker build command like, docker build --build-arg VITE_API_URL=http://localhost:8000/api -t urbancart:dev . while in pipeline we are passing it from GitHub secrets.
 # Here $PORT is a runtime variable provided by Render, it dynamically assigns a port for the web service.
 # while to spinup the container locally we have to supply the $PORT as a env variable, docker run -p 8000:8000 -e PORT=8000 --env-file .env urbancart:dev
 # sh allows to use shell features like variable substitution. and -c allows us to pass the entire command as a single string.

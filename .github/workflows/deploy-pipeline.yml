@@ -35,6 +35,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: pradeep313/urbancart:latest
+          build-args: |
+            VITE_API_URL=${{ secrets.VITE_API_URL }}
       # Trigger Render Deployment using renders deploy hook stored in GitHub Secrets
       - name: Trigger Render Deployment
         run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
