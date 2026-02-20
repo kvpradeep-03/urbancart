@@ -87,10 +87,12 @@ class UserRegistrationAPIView(APIView):
                 )
                 with open(template_path, "r", encoding="utf-8") as f:
                     html_template = f.read()
+                # Build an absolute profile URL so the link works on local and deployed hosts
+                profile_url = request.build_absolute_uri("/profile/")
                 replacements = {
                     # [[params]] using double square brackets to avoid conflicts with other templating syntaxes
                     "[[USER_NAME]]": user.username,
-                    "[[SITE_URL]]": settings.SITE_URL
+                    "[[SITE_URL]]": profile_url,
                 }
 
                 for placeholder, value in replacements.items():
@@ -316,7 +318,11 @@ class UserDetailAPIView(APIView):
         orderDetails = OrderSerializer(orders, many=True)
         # Returns the JSON representation of the user (without the password)
         return Response(
-            {"user": serializer.data, "cart": cartDetails.data, "orders": orderDetails.data},
+            {
+                "user": serializer.data,
+                "cart": cartDetails.data,
+                "orders": orderDetails.data,
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -357,32 +363,29 @@ class EditUserProfile(APIView):
             if not 8 <= len(new_username) <= 16:
                 return Response(
                     {"error": "Username must be between 8 and 16 characters long"},
-                    status=400
+                    status=400,
                 )
 
             if not re.fullmatch(r"[A-Za-z0-9@#$%^&*!._+\-\s]+", new_username):
                 return Response(
-                    {"error": "Username contains invalid characters"},
-                    status=400
+                    {"error": "Username contains invalid characters"}, status=400
                 )
 
-            
             letters_count = len(re.findall(r"[A-Za-z]", new_username))
             if letters_count < 4:
                 return Response(
-                    {"error": "Username must contain at least 4 letters"},
-                    status=400
+                    {"error": "Username must contain at least 4 letters"}, status=400
                 )
 
             # Check uniqueness (excluding current user)
-            if CustomUser.objects.filter(username=new_username).exclude(id=user.id).exists():
-                return Response(
-                    {"error": "Username already in use"},
-                    status=400
-                )
+            if (
+                CustomUser.objects.filter(username=new_username)
+                .exclude(id=user.id)
+                .exists()
+            ):
+                return Response({"error": "Username already in use"}, status=400)
 
             user.username = new_username
-
 
         phone = request.data.get("phone")
         if phone:
@@ -494,9 +497,13 @@ class PasswordResetRequestAPIView(APIView):
                 with open(template_path, "r", encoding="utf-8") as f:
                     html_template = f.read()
 
+                # Use the incoming request to build an absolute reset link (works locally and on Render)
+                reset_link = request.build_absolute_uri(
+                    f"/reset-password/{uid}/{token}/"
+                )
                 replacements = {
                     "[[USER_NAME]]": user.username,
-                    "[[RESET_LINK]]": f"{settings.SITE_URL}/reset-password/{uid}/{token}/",
+                    "[[RESET_LINK]]": reset_link,
                 }
                 for placeholder, value in replacements.items():
                     if value is not None:
