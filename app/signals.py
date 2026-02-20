@@ -8,19 +8,18 @@ from .models import Product, ProductImage
 # media/products/thumbnails/
 # media/products/images/
 # in signals When we delete a product , Django fires a “post_delete” event
-# The signal catches this event the signal function gets the file path 
+# The signal catches this event the signal function gets the file path
 # Deletes the thumbnail file and all related ProductImage files
 # Keeps your media folder clean
 
 # Delete product thumbnail file
 @receiver(post_delete, sender=Product)
 def delete_product_thumbnail(sender, instance, **kwargs):
-    if instance.thumbnail and os.path.isfile(instance.thumbnail.path):
-        os.remove(instance.thumbnail.path)
+    if instance.thumbnail:
+        instance.thumbnail.delete(save=False)
 
 
-# Delete product images when a ProductImage object is deleted
 @receiver(post_delete, sender=ProductImage)
 def delete_product_image(sender, instance, **kwargs):
-    if instance.image and os.path.isfile(instance.image.path):
-        os.remove(instance.image.path)
+    if instance.image:
+        instance.image.delete(save=False)
