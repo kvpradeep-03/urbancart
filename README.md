@@ -130,6 +130,6 @@ A-->>F: JSON response
 F-->>U: UI updated
 ```
 
-### 🖹 API documentation
- - documentation in progress...
+### 🖹 documentation
+ - [urbancart's wiki](https://github.com/kvpradeep-03/urbancart/wiki)
     
