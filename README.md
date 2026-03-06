@@ -129,7 +129,8 @@ A->>E: Send confirmation email
 A-->>F: JSON response
 F-->>U: UI updated
 ```
-
+### Live url
+ - [live project](https://urbancart-w92a.onrender.com)
 ### 🖹 Documentation
  - [urbancart's wiki](https://github.com/kvpradeep-03/urbancart/wiki)
     
